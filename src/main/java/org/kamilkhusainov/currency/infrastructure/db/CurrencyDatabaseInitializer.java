@@ -1,24 +1,31 @@
-package org.kamilkhusainov.currency.db;
+package org.kamilkhusainov.currency.infrastructure.db;
+import javax.sql.DataSource;
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.*;
+import java.util.Properties;
 
-public class DatabaseInitializer {
-    private final String url;
-    public DatabaseInitializer(String url){
-        this.url = url;
+public class CurrencyDatabaseInitializer {
+
+    private final DataSource dataSource;
+    private Connection connection;
+    public CurrencyDatabaseInitializer(DataSource dataSource) {
+        this.dataSource = dataSource;
     }
 
     public void init()
     {
         try {
-            createTables();
-            insertValues();
+            connection = dataSource.getConnection();
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
-        catch (SQLException e){
-            e.printStackTrace();
-        }
+        createTables();
+        insertValues();
 
     }
-    private void createTables() throws SQLException {
+    private void createTables(){
         String createCurrenciesTableSql = """
                     CREATE TABLE IF NOT EXISTS Currencies (
                     ID INT PRIMARY KEY,
@@ -31,12 +38,15 @@ public class DatabaseInitializer {
                     BaseCurrencyId INT,FOREIGN KEY (BaseCurrencyId) REFERENCES Currencies(ID),
                     TargetCurrencyId INT,FOREIGN KEY (TargetCurrencyId) REFERENCES Currencies(ID),
                     Rate Decimal(6))""";
-
-        Connection connection = DriverManager.getConnection(url);
-        PreparedStatement preparedStatement = connection.prepareStatement(createCurrenciesTableSql);
-        preparedStatement.execute();
-        preparedStatement = connection.prepareStatement(createExchangeRatesTableSql);
-        preparedStatement.execute();
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(createCurrenciesTableSql);
+            preparedStatement.execute();
+            preparedStatement = connection.prepareStatement(createExchangeRatesTableSql);
+            preparedStatement.execute();
+        }
+        catch (SQLException e){
+            e.printStackTrace();
+        }
     }
     private void insertValues() {
         String insertCurrenciesSql = """
@@ -46,12 +56,11 @@ public class DatabaseInitializer {
                     """;
 
         try {
-            Connection connection = DriverManager.getConnection(url);
             PreparedStatement preparedStatement = connection.prepareStatement(insertCurrenciesSql);
             preparedStatement.setInt(1,1);
             preparedStatement.setString(2,"AUD");
             preparedStatement.setString(3,"Australian dollar");
-            preparedStatement.setString(1,"A$3333");
+            preparedStatement.setString(4,"A$3333");
 
             preparedStatement.execute();
 
@@ -60,4 +69,4 @@ public class DatabaseInitializer {
             e.printStackTrace();
         }
     }
-    }
+}
