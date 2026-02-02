@@ -1,5 +1,6 @@
 package org.kamilkhusainov.currency.servlet;
 import org.kamilkhusainov.currency.dao.CurrencyDao;
+import org.kamilkhusainov.currency.infrastructure.db.AppContainer;
 import org.kamilkhusainov.currency.infrastructure.db.CurrencyDatabaseInitializer;
 import org.kamilkhusainov.currency.service.CurrencyService;
 
@@ -15,7 +16,7 @@ import java.io.IOException;
 
 @WebServlet("/currencies")
 public class CurrenciesServlet extends HttpServlet {
-    private CurrencyService service;
+    private CurrencyService currencyService;
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setStatus(200);
@@ -25,11 +26,7 @@ public class CurrenciesServlet extends HttpServlet {
         response.getWriter().write("Hello from servlet");
     }
     public void init(){
-        DataSource dataSource = (DataSource) getServletContext().getAttribute("dataSource");
-        CurrencyService service = new CurrencyService();
-        CurrencyDao dao = new CurrencyDao(dataSource);
-
-
+        currencyService = appContainer.services().currencyService();
     }
 }
 

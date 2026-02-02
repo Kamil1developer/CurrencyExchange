@@ -17,32 +17,33 @@ public class CurrencyDatabaseInitializer {
     {
         try {
             connection = dataSource.getConnection();
-
+            createTables();
+            insertValues();
+            connection.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        createTables();
-        insertValues();
 
     }
     private void createTables(){
         String createCurrenciesTableSql = """
                     CREATE TABLE IF NOT EXISTS Currencies (
-                    ID INT PRIMARY KEY,
+                    ID INTEGER PRIMARY KEY,
                     Code VARCHAR(100),
                     FullName VARCHAR(100),
                     Sign VARCHAR(100))""";
         String createExchangeRatesTableSql = """
                     CREATE TABLE IF NOT EXISTS ExchangeRates (
-                    ID INT PRIMARY KEY,
-                    BaseCurrencyId INT,FOREIGN KEY (BaseCurrencyId) REFERENCES Currencies(ID),
-                    TargetCurrencyId INT,FOREIGN KEY (TargetCurrencyId) REFERENCES Currencies(ID),
+                    ID INTEGER PRIMARY KEY,
+                    BaseCurrencyId INTEGER,FOREIGN KEY (BaseCurrencyId) REFERENCES Currencies(ID),
+                    TargetCurrencyId INTEGER,FOREIGN KEY (TargetCurrencyId) REFERENCES Currencies(ID),
                     Rate Decimal(6))""";
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(createCurrenciesTableSql);
             preparedStatement.execute();
             preparedStatement = connection.prepareStatement(createExchangeRatesTableSql);
             preparedStatement.execute();
+            preparedStatement.close();
         }
         catch (SQLException e){
             e.printStackTrace();
@@ -50,9 +51,9 @@ public class CurrencyDatabaseInitializer {
     }
     private void insertValues() {
         String insertCurrenciesSql = """
-                    INSERT INTO Currencies (ID,Code,FullName,Sign) VALUES (?,?,?,?)""";
+                    INSERT OR IGNORE INTO Currencies (ID,Code,FullName,Sign) VALUES (?,?,?,?)""";
         String insertExchangeRatesSql = """
-                    INSERT INTO ExchangeRates (ID,BaseCurrencyId,TargetCurrencyId,Rate) VALUES (?,?,?,?)
+                    INSERT OR IGNORE INTO ExchangeRates (ID,BaseCurrencyId,TargetCurrencyId,Rate) VALUES (?,?,?,?)
                     """;
 
         try {
@@ -63,6 +64,7 @@ public class CurrencyDatabaseInitializer {
             preparedStatement.setString(4,"A$3333");
 
             preparedStatement.execute();
+            preparedStatement.close();
 
         }
         catch (SQLException e){
