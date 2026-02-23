@@ -1,4 +1,4 @@
-package org.kamilkhusainov.currency.infrastructure.db;
+package org.kamilkhusainov.currency.infrastructure;
 
 import org.kamilkhusainov.currency.dao.CurrencyDao;
 

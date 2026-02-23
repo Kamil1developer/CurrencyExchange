@@ -1,4 +1,4 @@
-package org.kamilkhusainov.currency.infrastructure.db;
+package org.kamilkhusainov.currency.infrastructure;
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,24 +25,25 @@ public class CurrencyDatabaseInitializer {
     private void createTables(Connection connection){
         String createCurrenciesTableSql = """
                     CREATE TABLE IF NOT EXISTS Currencies (
-                    ID INTEGER PRIMARY KEY,
-                    Code VARCHAR(100),
-                    FullName VARCHAR(100),
-                    Sign VARCHAR(100))""";
+                    ID INT AUTO_INCREMENT PRIMARY KEY,
+                    Code VARCHAR(100) UNIQUE,
+                    FullName VARCHAR(100) ,
+                    Sign VARCHAR(100) )""";
         String createExchangeRatesTableSql = """
                 CREATE TABLE IF NOT EXISTS ExchangeRates (
-                                    ID INTEGER PRIMARY KEY,
-                                    BaseCurrencyId INTEGER,
-                                    TargetCurrencyId INTEGER,
-                                    Rate DECIMAL(6),
+                                    INT AUTO_INCREMENT PRIMARY KEY,
+                                    BaseCurrencyId INTEGER UNIQUE,
+                                    TargetCurrencyId INTEGER UNIQUE,
+                                    Rate DECIMAL(6) UNIQUE,
                                     FOREIGN KEY (BaseCurrencyId) REFERENCES Currencies(ID),
                                     FOREIGN KEY (TargetCurrencyId) REFERENCES Currencies(ID)
                                 );""";
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(createCurrenciesTableSql);
             preparedStatement.execute();
+            preparedStatement = connection.prepareStatement(createExchangeRatesTableSql);
             preparedStatement.close();
-//            preparedStatement = connection.prepareStatement(createExchangeRatesTableSql);
+//            PreparedStatement preparedStatement = connection.prepareStatement("DROP TABLE Currencies");
 //            preparedStatement.execute();
 //            preparedStatement.close();
         }
@@ -52,19 +53,15 @@ public class CurrencyDatabaseInitializer {
     }
     private void insertValues(Connection connection) {
         String insertCurrenciesSql = """
-                    INSERT OR IGNORE INTO Currencies (ID,Code,FullName,Sign) VALUES (?,?,?,?)""";
-        String insertExchangeRatesSql = """
-                    INSERT OR IGNORE INTO ExchangeRates (ID,BaseCurrencyId,TargetCurrencyId,Rate) VALUES (?,?,?,?)
-                    """;
+                    INSERT OR IGNORE INTO Currencies (Code,FullName,Sign) VALUES (?,?,?)""";
 
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(insertCurrenciesSql);
-            preparedStatement.setInt(1,1);
-            preparedStatement.setString(2,"AUD");
-            preparedStatement.setString(3,"Australian dollar");
-            preparedStatement.setString(4,"A$3333");
-
+            preparedStatement.setString(1,"AUD");
+            preparedStatement.setString(2,"Australian dollar");
+            preparedStatement.setString(3,"A$3333");
             preparedStatement.execute();
+
             preparedStatement.close();
 
         }

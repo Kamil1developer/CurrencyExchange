@@ -1,4 +1,4 @@
-package org.kamilkhusainov.currency.infrastructure.db;
+package org.kamilkhusainov.currency.infrastructure;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;

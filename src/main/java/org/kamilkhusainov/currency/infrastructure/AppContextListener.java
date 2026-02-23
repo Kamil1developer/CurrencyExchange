@@ -1,15 +1,10 @@
-package org.kamilkhusainov.currency.infrastructure.db;
-import com.zaxxer.hikari.HikariConfig;
-import org.kamilkhusainov.currency.dao.CurrencyDao;
-import org.kamilkhusainov.currency.service.CurrencyService;
+package org.kamilkhusainov.currency.infrastructure;
 
-import com.zaxxer.hikari.HikariDataSource;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
 import javax.sql.DataSource;
-import java.util.Properties;
 
 @WebListener
 public class AppContextListener implements ServletContextListener {
@@ -24,5 +19,6 @@ public class AppContextListener implements ServletContextListener {
 
         AppContainer appContainer = new AppContainer(dataSource);
         context.setAttribute("appContainer",appContainer);
+        context.setAttribute("dataSource",dataSource);
     }
 }

@@ -1,20 +1,21 @@
 package org.kamilkhusainov.currency.model;
 public class Currency {
-    private String name;
-    private String code;
-    private String sign;
+    private final String code;
+    private final String name;
+    private final String sign;
     public Currency(String name, String code, String sign){
-        this.name = name;
         this.code = code;
+        this.name = name;
         this.sign = sign;
+    }
+
+    public String getCode(){
+        return this.code;
     }
     public String getName(){
         return this.name;
     }
-    public String getCode(){
-        return this.code;
-    }
-    public String getSig(){
+    public String getSign(){
         return this.sign;
     }
 }
