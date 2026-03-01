@@ -15,7 +15,6 @@ public final class DatabaseConfig {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        String url = properties.getProperty("database.url");
-        return url;
+        return properties.getProperty("database.url");
 }
 }

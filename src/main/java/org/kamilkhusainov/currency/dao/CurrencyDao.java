@@ -2,9 +2,7 @@ package org.kamilkhusainov.currency.dao;
 
 import org.kamilkhusainov.currency.entity.CurrenciesEntity;
 import org.kamilkhusainov.currency.exceptions.DaoException;
-import org.kamilkhusainov.currency.exceptions.ServiceException;
 import org.kamilkhusainov.currency.model.Currency;
-import org.sqlite.SQLiteErrorCode;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -14,6 +12,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import java.util.List;
+import java.util.Optional;
 
 public class CurrencyDao {
     private final DataSource dataSource;
@@ -41,12 +40,13 @@ public class CurrencyDao {
     }
     public CurrenciesEntity findByCode(String code){
         try (Connection connection = dataSource.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM Currencies WHERE Code = ?");
+            PreparedStatement preparedStatement = connection.prepareStatement("SELECT ID,Code,FullName,Sign FROM Currencies WHERE Code = ?");
             preparedStatement.setString(1,code);
             ResultSet resultSet = preparedStatement.executeQuery();
-            CurrenciesEntity entity = new CurrenciesEntity(resultSet.getLong("ID"),
+            CurrenciesEntity entity;
+            entity = new CurrenciesEntity(resultSet.getLong("ID"),
                     resultSet.getString("Code"),
-                    resultSet.getString("FullName"),resultSet.getString("Sign"));
+                    resultSet.getString("FullName"), resultSet.getString("Sign"));
             resultSet.close();
             return entity;
         }
@@ -57,9 +57,9 @@ public class CurrencyDao {
     public void insert(Currency currency){
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO Currencies(Code,FullName,Sign) VALUES (?, ?, ?)");
-            preparedStatement.setString(1,currency.getCode());
-            preparedStatement.setString(2,currency.getName());
-            preparedStatement.setString(3,currency.getSign());
+            preparedStatement.setString(1,currency.code());
+            preparedStatement.setString(2,currency.name());
+            preparedStatement.setString(3,currency.sign());
             preparedStatement.executeUpdate();
         }
         catch (SQLException e) {

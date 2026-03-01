@@ -6,7 +6,9 @@ public class ServiceException extends RuntimeException{
     }
     public enum Type {
         DUPLICATE_CURRENCY_CODE("Валюта с таким кодом уже существует",409),
-        MISSING_FIELD_CODE("Отсутствует нужное поле формы",400);
+        DUPLICATE_EXCHANGE_RATE_CODE("Валютная пара с таким кодом уже существует",409),
+        MISSING_FIELD_CODE("Отсутствует нужное поле формы",400),
+        NOT_INTEGER_CODE("Ожидается число",400);
         private final String text;
         private final int code;
         Type(String text,Integer code){

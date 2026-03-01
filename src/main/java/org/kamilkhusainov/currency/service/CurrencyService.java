@@ -7,6 +7,7 @@ import org.kamilkhusainov.currency.exceptions.ServiceException;
 import org.kamilkhusainov.currency.model.Currency;
 
 import java.util.List;
+import java.util.Optional;
 
 public class CurrencyService {
     private final CurrencyDao currencyDao;
@@ -15,12 +16,10 @@ public class CurrencyService {
         this.currencyDao = currencyDao;
     }
     public List<CurrenciesEntity> findAll(){
-        List<CurrenciesEntity> entityList = currencyDao.findAll();
-        return entityList;
+        return currencyDao.findAll();
     }
     public CurrenciesEntity findByCode(String code){
-        CurrenciesEntity currency = currencyDao.findByCode(code);
-        return currency;
+        return currencyDao.findByCode(code);
     }
     public void create(Currency currency){
         try {
@@ -29,6 +28,7 @@ public class CurrencyService {
         catch (DaoException daoException){
             throw new ServiceException(daoException.getMessage(),daoException.getCause());
         }
+
     }
 
 
