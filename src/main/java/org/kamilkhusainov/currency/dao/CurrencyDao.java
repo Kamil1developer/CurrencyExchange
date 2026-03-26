@@ -43,8 +43,7 @@ public class CurrencyDao {
             PreparedStatement preparedStatement = connection.prepareStatement("SELECT ID,Code,FullName,Sign FROM Currencies WHERE Code = ?");
             preparedStatement.setString(1,code);
             ResultSet resultSet = preparedStatement.executeQuery();
-            CurrenciesEntity entity;
-            entity = new CurrenciesEntity(resultSet.getLong("ID"),
+            CurrenciesEntity entity = new CurrenciesEntity(resultSet.getLong("ID"),
                     resultSet.getString("Code"),
                     resultSet.getString("FullName"), resultSet.getString("Sign"));
             resultSet.close();
@@ -53,6 +52,24 @@ public class CurrencyDao {
         catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+    public CurrenciesEntity findById(String id){
+        try (Connection connection = dataSource.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement("SELECT ID,Code,FullName,Sign FROM Currencies WHERE ID = ?");
+            preparedStatement.setString(1,String.valueOf(Integer.parseInt(id) + 1));
+            ResultSet resultSet = preparedStatement.executeQuery();
+            if (resultSet.next()){
+            CurrenciesEntity entity = new CurrenciesEntity(resultSet.getLong("ID"),
+                    resultSet.getString("Code"),
+                    resultSet.getString("FullName"), resultSet.getString("Sign"));
+            resultSet.close();
+            return entity;
+            }
+        }
+        catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return new CurrenciesEntity(0,"null","null","null");
     }
     public void insert(Currency currency){
         try (Connection connection = dataSource.getConnection()) {
@@ -68,5 +85,4 @@ public class CurrencyDao {
             }
         }
     }
-
 }

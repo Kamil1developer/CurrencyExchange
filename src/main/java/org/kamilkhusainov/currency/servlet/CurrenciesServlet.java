@@ -40,14 +40,14 @@ public class CurrenciesServlet extends HttpServlet {
                 response.setStatus(ServiceException.Type.DUPLICATE_CURRENCY_CODE.getCode());
                 response.setContentType("application/json");
                 response.setCharacterEncoding("UTF-8");
-                response.getWriter().write(ServiceException.Type.DUPLICATE_CURRENCY_CODE.getText());
+                response.getWriter().write(ServiceException.Type.DUPLICATE_CURRENCY_CODE.getMessage());
             }
         }
         else{
             response.setStatus(ServiceException.Type.MISSING_FIELD_CODE.getCode());
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
-            response.getWriter().write(ServiceException.Type.MISSING_FIELD_CODE.getText());
+            response.getWriter().write(ServiceException.Type.MISSING_FIELD_CODE.getMessage());
         }
 
     }

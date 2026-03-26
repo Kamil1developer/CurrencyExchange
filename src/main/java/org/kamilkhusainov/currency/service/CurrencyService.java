@@ -21,6 +21,9 @@ public class CurrencyService {
     public CurrenciesEntity findByCode(String code){
         return currencyDao.findByCode(code);
     }
+    public CurrenciesEntity findById(String id){
+        return currencyDao.findById(id);
+    }
     public void create(Currency currency){
         try {
             currencyDao.insert(currency);

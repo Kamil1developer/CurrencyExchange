@@ -36,7 +36,7 @@ public class CurrencyDatabaseInitializer {
                     ID INTEGER PRIMARY KEY AUTOINCREMENT,
                     BaseCurrencyId INTEGER,
                     TargetCurrencyId INTEGER,
-                    Rate NUMERIC NOT NULL,
+                    Rate NUMERIC NOT NULL, UNIQUE(BaseCurrencyId, TargetCurrencyId),
                     FOREIGN KEY (BaseCurrencyId) REFERENCES Currencies(ID),
                     FOREIGN KEY (TargetCurrencyId) REFERENCES Currencies(ID)
                 );
