@@ -85,7 +85,7 @@ public class ExchangeRateDao {
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement("UPDATE ExchangeRates SET Rate = ? WHERE ID = ?");
             preparedStatement.setBigDecimal(1, new BigDecimal(rate));
-            preparedStatement.setLong(2, id + 1);
+            preparedStatement.setLong(2, id);
             int rows;
             rows = preparedStatement.executeUpdate();
             int b = rows;

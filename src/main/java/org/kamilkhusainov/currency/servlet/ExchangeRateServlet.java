@@ -34,23 +34,32 @@ public class ExchangeRateServlet extends HttpServlet {
     }
     protected void doPatch(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        String rate = parseRate(req);
-        if (!rate.isEmpty()) {
-            String currencyCodes = req.getPathInfo().substring(1);;
-            Map<String, Object> map = exchangeRateService.patch(currencyCodes, rate);
-            String json = mapper.writeValueAsString(map);
+        try {
 
-            resp.setContentType("application/json");
-            resp.setCharacterEncoding("UTF-8");
-            resp.setStatus(200);
-            resp.getWriter().write(json);
+            String rate = parseRate(req);
+            if (!rate.isEmpty()) {
+                String currencyCodes = req.getPathInfo().substring(1);
+                ;
+                Map<String, Object> map = exchangeRateService.patch(currencyCodes, rate);
+                String json = mapper.writeValueAsString(map);
 
+                resp.setContentType("application/json");
+                resp.setCharacterEncoding("UTF-8");
+                resp.setStatus(200);
+                resp.getWriter().write(json);
+
+            } else {
+                resp.setStatus(ServiceException.Type.MISSING_FIELD_CODE.getCode());
+                resp.setContentType("application/json");
+                resp.setCharacterEncoding("UTF-8");
+                resp.getWriter().write(ServiceException.Type.MISSING_FIELD_CODE.getMessage());
+            }
         }
-        else{
-            resp.setStatus(ServiceException.Type.MISSING_FIELD_CODE.getCode());
-            resp.setContentType("application/json");
+        catch (ServiceException serviceException) {
+            resp.setStatus(ServiceException.Type.DATABASE_ERROR.getCode());
+            resp.setContentType("/application/json");
             resp.setCharacterEncoding("UTF-8");
-            resp.getWriter().write(ServiceException.Type.MISSING_FIELD_CODE.getMessage());
+            resp.getWriter().write(serviceException.getMessage());
         }
     }
     private String parseRate(HttpServletRequest req) throws IOException {
