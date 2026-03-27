@@ -18,7 +18,7 @@ import java.util.Map;
 @WebServlet("/exchangeRates")
 public class ExchangeRatesServlet extends HttpServlet {
     private ExchangeRateService exchangeRateService;
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper MAPPER = new ObjectMapper();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -26,7 +26,7 @@ public class ExchangeRatesServlet extends HttpServlet {
             resp.setContentType("application/json");
             resp.setStatus(200);
             List<Map<String, Object>> list = exchangeRateService.findAll();
-            resp.getWriter().write(mapper.writeValueAsString(list));
+            resp.getWriter().write(MAPPER.writeValueAsString(list));
         }
         catch (RuntimeException e) {
             resp.setContentType("application/json");
@@ -45,7 +45,7 @@ public class ExchangeRatesServlet extends HttpServlet {
                 String rate = req.getParameter("rate");
                 ExchangeRateDto exchangeRateDto = new ExchangeRateDto(baseCurrencyCode, targetCurrencyCode, rate);
                 Map<String, Object> map = exchangeRateService.create(exchangeRateDto);
-                String json = mapper.writeValueAsString(map);
+                String json = MAPPER.writeValueAsString(map);
 
                 resp.setContentType("application/json");
                 resp.setCharacterEncoding("UTF-8");

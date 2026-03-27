@@ -20,7 +20,7 @@ public class ExchangeRateDao {
     public ExchangeRateDao(DataSource dataSource){
         this.dataSource = dataSource;
     }
-    public int insert(ExchangeRateDto exchangeRateDto){
+    public int insert(long baseCurrencyId, long targetCurrencyId, BigDecimal rate){
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO ExchangeRates(BaseCurrencyId, TargetCurrencyId, Rate) " +
                     "SELECT ?, ?, ? " +
@@ -28,11 +28,11 @@ public class ExchangeRateDao {
                     "   SELECT 1 FROM ExchangeRates " +
                     "   WHERE BaseCurrencyId = ? AND TargetCurrencyId = ?" +
                     ")");
-            preparedStatement.setString(1, exchangeRateDto.baseCurrencyCode());
-            preparedStatement.setString(2, exchangeRateDto.targetCurrencyCode());
-            preparedStatement.setString(3, exchangeRateDto.rate());
-            preparedStatement.setString(4, exchangeRateDto.baseCurrencyCode());
-            preparedStatement.setString(5, exchangeRateDto.targetCurrencyCode());
+            preparedStatement.setLong(1, baseCurrencyId);
+            preparedStatement.setLong(2, targetCurrencyId);
+            preparedStatement.setBigDecimal(3, rate);
+            preparedStatement.setLong(4, baseCurrencyId);
+            preparedStatement.setLong(5, targetCurrencyId);
             int rows = preparedStatement.executeUpdate();
             if (rows == 0){
                 return CurrencyConstants.ALREADY_EXISTS.getValue();
@@ -49,11 +49,11 @@ public class ExchangeRateDao {
         }
         return -1;
     }
-    public long findByCodes(String baseCurrencyId,String targetCurrencyId){
+    public long findByCodes(long baseCurrencyId,long targetCurrencyId){
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM ExchangeRates WHERE BaseCurrencyId = ? AND TargetCurrencyId = ?");
-            preparedStatement.setString(1, baseCurrencyId);
-            preparedStatement.setString(2, targetCurrencyId);
+            preparedStatement.setLong(1, baseCurrencyId);
+            preparedStatement.setLong(2, targetCurrencyId);
             ResultSet resultSet = preparedStatement.executeQuery();
             return resultSet.getLong("ID");
 
