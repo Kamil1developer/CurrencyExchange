@@ -71,7 +71,7 @@ public class ExchangeRateService {
         }
         return -1;
     }
-    public Map<String,String> findCurrenciesCode(String currencyCodes){
+    public Map<String,String> findExchangeRateCodes(String currencyCodes){
         List<ExchangeRateEntity> exchangeRateEntityList;
         exchangeRateEntityList = exchangeRateDao.findAll();
         for(ExchangeRateEntity exchangeRateEntity:exchangeRateEntityList) {
@@ -84,15 +84,15 @@ public class ExchangeRateService {
         }
         return Map.of();
     }
-    public Map<String, Object> patch(String currencyCodes,String rate){
+    public Map<String, Object> patch(String exchangeRateCodes,String rate){
         if (isValidRate(rate)) {
-            long id = findId(currencyCodes);
+            long id = findId(exchangeRateCodes);
             exchangeRateDao.update(id,rate);
-            Map<String,String> currenciesCode = findCurrenciesCode(currencyCodes);
+            Map<String,String> exchangeRateCodesMap = findExchangeRateCodes(exchangeRateCodes);
             Map<String, Object> linkedHashMap = new LinkedHashMap<>();
             linkedHashMap.put("id", id);
-            linkedHashMap.put("baseCurrency", currencyService.findByCode(currenciesCode.get("baseCurrencyCode")));
-            linkedHashMap.put("targetCurrency", currencyService.findByCode(currenciesCode.get("targetCurrencyCode")));
+            linkedHashMap.put("baseCurrency", currencyService.findByCode(exchangeRateCodesMap.get("baseCurrencyCode")));
+            linkedHashMap.put("targetCurrency", currencyService.findByCode(exchangeRateCodesMap.get("targetCurrencyCode")));
             linkedHashMap.put("rate", new BigDecimal(rate));
             return linkedHashMap;
         }

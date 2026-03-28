@@ -21,7 +21,8 @@ public class ExchangeAmountServlet extends HttpServlet {
         if (!isInvalidRequest(req,resp)) {
             String from = req.getParameter("from");
             String to = req.getParameter("to");
-            String amount = req.getParameter("amount");
+            int amount = Integer.parseInt(req.getParameter("amount"));
+            exchangeAmountService.existsExchangeRate(from,to,amount);
         }
 
     }
@@ -40,7 +41,7 @@ public class ExchangeAmountServlet extends HttpServlet {
     }
     @Override
     public void init(){
-         AppContainer appContainer = (AppContainer) getServletContext().getAttribute("AppContainer");
+         AppContainer appContainer = (AppContainer) getServletContext().getAttribute("appContainer");
          exchangeAmountService = appContainer.services().exchangeAmountService();
     }
 }

@@ -38,9 +38,8 @@ public class ExchangeRateServlet extends HttpServlet {
 
             String rate = parseRate(req);
             if (!rate.isEmpty()) {
-                String currencyCodes = req.getPathInfo().substring(1);
-                ;
-                Map<String, Object> map = exchangeRateService.patch(currencyCodes, rate);
+                String exchangeRateCodes = req.getPathInfo().substring(1);
+                Map<String, Object> map = exchangeRateService.patch(exchangeRateCodes, rate);
                 String json = mapper.writeValueAsString(map);
 
                 resp.setContentType("application/json");
