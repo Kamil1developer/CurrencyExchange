@@ -11,7 +11,7 @@ public class Services {
     public Services(Daos daos){
         currencyService = new CurrencyService(daos.currencyDao());
         exchangeRateService = new ExchangeRateService(daos.exchangeRateDao(),currencyService);
-        exchangeAmountService = new ExchangeAmountService(daos.exchangeAmountDao(), exchangeRateService);
+        exchangeAmountService = new ExchangeAmountService(daos.exchangeRateDao(), exchangeRateService,currencyService);
     }
 
     public CurrencyService currencyService(){

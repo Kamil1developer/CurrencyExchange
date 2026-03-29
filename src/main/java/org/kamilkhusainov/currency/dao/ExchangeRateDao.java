@@ -81,6 +81,25 @@ public class ExchangeRateDao {
             throw new RuntimeException(e);
         }
     }
+    public List<ExchangeRateEntity> findAllPairs(long baseCurrencyId){
+        try (Connection connection = dataSource.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM ExchangeRates WHERE BaseCurrencyId = ?");
+            preparedStatement.setLong(1, baseCurrencyId);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            List<ExchangeRateEntity> entityList = new LinkedList<>();
+            while (resultSet.next()){
+                ExchangeRateEntity entity = new ExchangeRateEntity(resultSet.getLong("ID"),
+                        resultSet.getInt("BaseCurrencyId"),
+                        resultSet.getInt("TargetCurrencyId"),resultSet.getBigDecimal("Rate"));
+                entityList.add(entity);
+            }
+            resultSet.close();
+            return entityList;
+        }
+        catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
     public void update(long id, String rate){
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement("UPDATE ExchangeRates SET Rate = ? WHERE ID = ?");
