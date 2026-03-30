@@ -24,8 +24,8 @@ public class ExchangeAmountServlet extends HttpServlet {
             int amount = Integer.parseInt(req.getParameter("amount"));
             exchangeAmountService.existsExchangeRate(from,to,amount);
         }
-
     }
+
     private boolean isInvalidRequest(HttpServletRequest req,HttpServletResponse resp) throws IOException {
         try {
             Integer.parseInt(req.getParameter("amount"));
