@@ -7,14 +7,14 @@ import org.kamilkhusainov.currency.entity.CurrenciesEntity;
 import org.kamilkhusainov.currency.entity.ExchangeRateEntity;
 import org.kamilkhusainov.currency.infrastructure.AppContainer;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.math.BigDecimal;
+import java.util.*;
 
 public class ExchangeAmountService {
     private final ExchangeRateService exchangeRateService;
     private final ExchangeRateDao exchangeRateDao;
     private final CurrencyService currencyService;
+    private record Result(List<Map<CurrenciesEntity,CurrenciesEntity>> pairsFromTo, ExchangeRateEntity exchangeRateEntity,  CurrenciesEntity baseCurrency){}
 
     public ExchangeAmountService(ExchangeRateDao exchangeRateDao, ExchangeRateService exchangeRateService, CurrencyService currencyService) {
         this.exchangeRateService = exchangeRateService;
@@ -26,35 +26,43 @@ public class ExchangeAmountService {
         Map<String,String> exchangeRateCodes = exchangeRateService.findExchangeRateCodes(from + to);
         if (exchangeRateCodes.isEmpty()){
             if (existsReverseExchangeRate(to,from).isEmpty()){
-                findCrossExchangeRate(from,to);
+                Optional<Result> crossExchangeRates = findCrossExchangeRate(from,to);
+                if (crossExchangeRates.isPresent()) {
+                    int convertedAmount = calculateAmountOfCross(crossExchangeRates.get().pairsFromTo,crossExchangeRates.get().exchangeRateEntity(),amount);
+                }
             }
         }
     }
     public Map<String,String> existsReverseExchangeRate(String to, String from){
         return exchangeRateService.findExchangeRateCodes(to + from);
     }
-    public void findCrossExchangeRate(String from, String to){
+    public Optional<Result> findCrossExchangeRate(String from, String to){
         List<ExchangeRateEntity> exchangeRateEntityList = exchangeRateDao.findAll();
         for (ExchangeRateEntity exchangeRateEntity: exchangeRateEntityList){
             CurrenciesEntity baseCurrency = currencyService.findById(exchangeRateEntity.baseCurrencyId());
-            List<String> pairsFromTo = findPairForCurrency(baseCurrency,from,to);
-            if (pairsFromTo.size() == CurrencyConstants.CROSS_PAIR_COMPONENTS.getValue()){
-                calculateAmountOfCross();
+            List<Map<CurrenciesEntity,CurrenciesEntity>> listPairsFromTo = findPairForCurrency(baseCurrency,from,to);
+            if (listPairsFromTo.size() == CurrencyConstants.CROSS_PAIR_COMPONENTS.getValue()){
+                return Optional.of(new Result(listPairsFromTo,exchangeRateEntity,baseCurrency));
             }
         }
+        return Optional.empty();
     }
-    private List<String> findPairForCurrency(CurrenciesEntity baseCurrency,String from, String to) {
+    private List<Map<CurrenciesEntity,CurrenciesEntity>> findPairForCurrency(CurrenciesEntity baseCurrency,String from, String to) {
         List<ExchangeRateEntity> exchangeRateEntityList = exchangeRateDao.findAllPairs(baseCurrency.id());
-        List<String> pairsFromTo = new ArrayList<>();
+        List<Map<CurrenciesEntity,CurrenciesEntity>> listPairsFromTo = new ArrayList<>();
         for (ExchangeRateEntity exchangeRateEntity : exchangeRateEntityList) {
             CurrenciesEntity targetCurrency = currencyService.findById(exchangeRateEntity.targetCurrencyId());
             if (targetCurrency.code().equals(from) || targetCurrency.code().equals(to)){
-                pairsFromTo.add(baseCurrency.code() + targetCurrency.code());
+                listPairsFromTo.add(new LinkedHashMap<>(Map.of(baseCurrency,targetCurrency)));
             }
         }
-        return pairsFromTo;
+        return listPairsFromTo;
     }
-    private int calculateAmountOfCross(){
+    private int calculateAmountOfCross(List<Map<CurrenciesEntity,CurrenciesEntity>> listCrossExchangeRates, ExchangeRateEntity exchangeRateEntity, int amount){
+        Set<CurrenciesEntity> currenciesEntities = listCrossExchangeRates.getFirst().keySet();
+        CurrenciesEntity baseCurrency = currenciesEntities.iterator().next();
+        CurrenciesEntity rateCrossToCurrency1 = listCrossExchangeRates.get(CurrencyConstants.INDEX_CROSS_FIRST_PAIR.getValue()).get(baseCurrency);
+        BigDecimal rateCrossToCurrency2;
         return 1;
     }
 
