@@ -1,11 +1,9 @@
 package org.kamilkhusainov.currency.service;
 
 import org.kamilkhusainov.currency.CurrencyConstants;
-import org.kamilkhusainov.currency.dao.ExchangeAmountDao;
 import org.kamilkhusainov.currency.dao.ExchangeRateDao;
 import org.kamilkhusainov.currency.entity.CurrenciesEntity;
 import org.kamilkhusainov.currency.entity.ExchangeRateEntity;
-import org.kamilkhusainov.currency.infrastructure.AppContainer;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -15,7 +13,6 @@ public class ExchangeAmountService {
     private final ExchangeRateService exchangeRateService;
     private final ExchangeRateDao exchangeRateDao;
     private final CurrencyService currencyService;
-    private record Result(List<Map<CurrenciesEntity,CurrenciesEntity>> pairsFromTo, ExchangeRateEntity exchangeRateEntity,  CurrenciesEntity baseCurrency){}
 
     public ExchangeAmountService(ExchangeRateDao exchangeRateDao, ExchangeRateService exchangeRateService, CurrencyService currencyService) {
         this.exchangeRateService = exchangeRateService;
@@ -23,16 +20,26 @@ public class ExchangeAmountService {
 
         this.currencyService = currencyService;
     }
-    public BigDecimal existsExchangeRate(String from, String to, int amount){
+    public Map<String, Object> existsExchangeRate(String from, String to, BigDecimal amount){
         Map<String,String> exchangeRateCodes = exchangeRateService.findExchangeRateCodes(from + to);
         if (exchangeRateCodes.isEmpty()){
             if (existsReverseExchangeRate(to,from).isEmpty()){
                 Optional<List<ExchangeRateEntity>> crossExchangeRates = findCrossExchangeRate(from,to);
                 if (crossExchangeRates.isPresent()) {
-                    return calculateAmountOfCross(crossExchangeRates.get(),amount);
+                    Map<String, Object> linkedHashMap = new LinkedHashMap<>();
+                    linkedHashMap.put("baseCurrency",currencyService.findById(crossExchangeRates.get().get(CurrencyConstants.INDEX_CROSS_FIRST_PAIR.getValue()).id()));
+                    linkedHashMap.put("targetCurrency",currencyService.findById(crossExchangeRates.get().get(CurrencyConstants.INDEX_CROSS_SECOND_PAIR.getValue()).id()));
+                    BigDecimal rate = convertAmountOfCross(crossExchangeRates.get());
+                    linkedHashMap.put("rate",rate);
+                    linkedHashMap.put("amount", amount);
+                    linkedHashMap.put("convertedAmount", rate.multiply(amount));
+                    return linkedHashMap;
                 }
+                return Map.of();
             }
+            return Map.of();
         }
+        return Map.of();
     }
     public Map<String,String> existsReverseExchangeRate(String to, String from){
         return exchangeRateService.findExchangeRateCodes(to + from);
@@ -59,12 +66,11 @@ public class ExchangeAmountService {
         }
         return listPairsFromTo;
     }
-    private BigDecimal calculateAmountOfCross(List<ExchangeRateEntity> listCrossExchangeRates,int amount){
+    private BigDecimal convertAmountOfCross(List<ExchangeRateEntity> listCrossExchangeRates){
         BigDecimal rateCrossToCurrency1 = listCrossExchangeRates.get(CurrencyConstants.INDEX_CROSS_FIRST_PAIR.getValue()).rate();
         BigDecimal rateCrossToCurrency2 = listCrossExchangeRates.get(CurrencyConstants.INDEX_CROSS_SECOND_PAIR.getValue()).rate();
-        BigDecimal rateFinal = rateCrossToCurrency2.divide(rateCrossToCurrency1,2, RoundingMode.HALF_UP);
 
-        return rateFinal.multiply(new BigDecimal(amount));
+        return rateCrossToCurrency1.divide(rateCrossToCurrency2,2, RoundingMode.HALF_UP);
     }
 
 

@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.Map;
 
 @WebServlet("/exchange/*")
@@ -21,11 +22,22 @@ public class ExchangeAmountServlet extends HttpServlet {
         if (!isInvalidRequest(req,resp)) {
             String from = req.getParameter("from");
             String to = req.getParameter("to");
-            int amount = Integer.parseInt(req.getParameter("amount"));
-            exchangeAmountService.existsExchangeRate(from,to,amount);
+            BigDecimal amount = new BigDecimal(req.getParameter("amount"));
+            Map<String, Object> body = exchangeAmountService.existsExchangeRate(from,to,amount);
+            if (!body.isEmpty()) {
+                resp.setContentType("/application/json");
+                resp.setStatus(200);
+                resp.setCharacterEncoding("UTF-8");
+                resp.getWriter().write(MAPPER.writeValueAsString(body));
+            }
+            else {
+                resp.setStatus(400);
+                resp.setContentType("application/json");
+                resp.setCharacterEncoding("UTF-8");
+                resp.getWriter().write(MAPPER.writeValueAsString(Map.of("message","Валюта не найдена")));
+            }
         }
     }
-
     private boolean isInvalidRequest(HttpServletRequest req,HttpServletResponse resp) throws IOException {
         try {
             Integer.parseInt(req.getParameter("amount"));
