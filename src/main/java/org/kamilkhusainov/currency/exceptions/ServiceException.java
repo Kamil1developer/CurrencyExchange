@@ -1,12 +1,14 @@
 package org.kamilkhusainov.currency.exceptions;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class ServiceException extends RuntimeException{
     private Type type;
     public ServiceException(String message,Throwable cause){
         super(message,cause);
     }
     public ServiceException(Type type){
-        super(type.getMessage());
         this.type = type;
     }
     public Type getType(){
@@ -17,15 +19,18 @@ public class ServiceException extends RuntimeException{
         DUPLICATE_EXCHANGE_RATE_CODE("Валютная пара с таким кодом уже существует",409),
         MISSING_FIELD_CODE("Отсутствует нужное поле формы",400),
         NOT_INTEGER_CODE("Ожидается число",400),
-        DATABASE_ERROR("База данных недоступна",500);
-        private final String text;
+        MAX_SIGN_LENGTH("Длина знака больше 3 ",400),
+        CURRENCY_CODE_MISSING("Код валюты отсутствует в адресе", 400),
+        DATABASE_ERROR("База данных недоступна",501),
+        CURRENCY_NOT_FOUND("Валюта не найдена",404);
+        private final Map<String,String> map = new HashMap<>();
         private final int code;
-        Type(String text,Integer code){
-            this.text = text;
+        Type( String message, int code){
+            map.put("message", message);
             this.code = code;
         }
-        public String getMessage() {
-            return text;
+        public Map<String,String> getMessage() {
+            return map;
         }
         public int getCode() {
             return code;

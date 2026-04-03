@@ -14,6 +14,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 
+import static util.ResponseUtil.sendErrorJson;
+
 
 @WebServlet("/currencies")
 public class CurrenciesServlet extends HttpServlet {
@@ -32,31 +34,49 @@ public class CurrenciesServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        if (!isInvalidRequest(request)){
-            Currency currency = new Currency(request.getParameter("name"),request.getParameter("code"),request.getParameter("sign"));
-            try {
-                currencyService.create(currency);
-            } catch (ServiceException serviceException) {
-                response.setStatus(ServiceException.Type.DUPLICATE_CURRENCY_CODE.getCode());
-                response.setContentType("application/json");
-                response.setCharacterEncoding("UTF-8");
-                response.getWriter().write(ServiceException.Type.DUPLICATE_CURRENCY_CODE.getMessage());
+        request.setCharacterEncoding("UTF-8");
+        if (!isInvalidRequest(request, response)) {
+            if (!isIncorrectValue(request)) {
+                createCurrency(request,response);
             }
-        }
-        else{
-            response.setStatus(ServiceException.Type.MISSING_FIELD_CODE.getCode());
-            response.setContentType("application/json");
-            response.setCharacterEncoding("UTF-8");
-            response.getWriter().write(ServiceException.Type.MISSING_FIELD_CODE.getMessage());
+            else{
+                sendErrorJson(ServiceException.Type.MAX_SIGN_LENGTH,response);
+            }
+        } else {
+            sendErrorJson(ServiceException.Type.MISSING_FIELD_CODE, response);
         }
 
     }
-    private boolean isInvalidRequest(HttpServletRequest request){
+
+    private void createCurrency(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        Currency currency = new Currency(request.getParameter("name"), request.getParameter("code"), request.getParameter("sign"));
+        try {
+            CurrenciesEntity currencyEntity = currencyService.create(currency);
+            response.setStatus(201);
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+            response.getWriter().write(MAPPER.writeValueAsString(currencyEntity));
+        } catch (ServiceException serviceException) {
+            response.setStatus(ServiceException.Type.DUPLICATE_CURRENCY_CODE.getCode());
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+            response.getWriter().write(MAPPER.writeValueAsString(ServiceException.Type.DUPLICATE_CURRENCY_CODE.getMessage()));
+        }
+    }
+
+    private boolean isIncorrectValue(HttpServletRequest request){
+        String sign = request.getParameter("sign");
+        return sign.length() > 3;
+    }
+    private boolean isInvalidRequest(HttpServletRequest request,HttpServletResponse response) throws IOException {
         String code = request.getParameter("code");
         String name = request.getParameter("name");
         String sign = request.getParameter("sign");
-
-        return name.isBlank() || code.isBlank() || sign.isBlank();
+        try {
+            return name.isBlank() || code.isBlank() || sign.isBlank();
+        } catch (NullPointerException e) {
+            return true;
+        }
     }
 
     @Override

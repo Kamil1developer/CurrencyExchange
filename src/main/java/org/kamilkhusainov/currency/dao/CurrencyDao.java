@@ -5,10 +5,7 @@ import org.kamilkhusainov.currency.exceptions.DaoException;
 import org.kamilkhusainov.currency.model.Currency;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 
 import java.util.List;
@@ -38,16 +35,19 @@ public class CurrencyDao {
             throw new RuntimeException(e);
         }
     }
-    public CurrenciesEntity findByCode(String code){
+    public Optional<CurrenciesEntity> findByCode(String code){
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement("SELECT ID,Code,FullName,Sign FROM Currencies WHERE Code = ?");
             preparedStatement.setString(1,code);
             ResultSet resultSet = preparedStatement.executeQuery();
-            CurrenciesEntity entity = new CurrenciesEntity(resultSet.getLong("ID"),
-                    resultSet.getString("Code"),
-                    resultSet.getString("FullName"), resultSet.getString("Sign"));
-            resultSet.close();
-            return entity;
+            if (resultSet.getString("Code") != null){
+                CurrenciesEntity entity = new CurrenciesEntity(resultSet.getLong("ID"),
+                        resultSet.getString("Code"),
+                        resultSet.getString("FullName"), resultSet.getString("Sign"));
+                resultSet.close();
+                return Optional.of(entity);
+            }
+            return Optional.empty();
         }
         catch (SQLException e) {
             throw new RuntimeException(e);
@@ -71,18 +71,26 @@ public class CurrencyDao {
         }
         return new CurrenciesEntity(-1,"nullNull","nullNull","nullNull");
     }
-    public void insert(Currency currency){
+    public long insert(Currency currency){
         try (Connection connection = dataSource.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO Currencies(Code,FullName,Sign) VALUES (?, ?, ?)");
+            PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO Currencies(Code,FullName,Sign) VALUES (?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
             preparedStatement.setString(1,currency.code());
             preparedStatement.setString(2,currency.name());
             preparedStatement.setString(3,currency.sign());
             preparedStatement.executeUpdate();
+            ResultSet rs = preparedStatement.getGeneratedKeys();
+            if (rs.next()) {
+                return rs.getLong(1);
+            }
+            throw new DaoException("Не удалось получить сгенерированный ID");
+
         }
         catch (SQLException e) {
             if (e.getErrorCode() == DaoException.Type.CONSTRAINT_UNIQUE.getCode()){
                 throw new DaoException(DaoException.Type.CONSTRAINT_UNIQUE.getMessage(),e);
             }
+            throw new DaoException("Ошибка БД",e);
+
         }
     }
 }

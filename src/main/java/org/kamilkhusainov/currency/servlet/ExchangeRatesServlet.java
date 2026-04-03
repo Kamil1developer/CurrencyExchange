@@ -4,6 +4,7 @@ import org.kamilkhusainov.currency.dto.ExchangeRateDto;
 import org.kamilkhusainov.currency.exceptions.ServiceException;
 import org.kamilkhusainov.currency.infrastructure.AppContainer;
 import org.kamilkhusainov.currency.service.ExchangeRateService;
+import util.ResponseUtil;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -14,6 +15,8 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+
+import static util.ResponseUtil.sendErrorJson;
 
 @WebServlet("/exchangeRates")
 public class ExchangeRatesServlet extends HttpServlet {
@@ -32,7 +35,7 @@ public class ExchangeRatesServlet extends HttpServlet {
             resp.setContentType("application/json");
             resp.setCharacterEncoding("UTF-8");
             resp.setStatus(ServiceException.Type.DATABASE_ERROR.getCode());
-            resp.getWriter().write(ServiceException.Type.DATABASE_ERROR.getMessage());
+            resp.getWriter().write(MAPPER.writeValueAsString(ServiceException.Type.DATABASE_ERROR.getMessage()));
         }
     }
 
@@ -55,21 +58,22 @@ public class ExchangeRatesServlet extends HttpServlet {
                 resp.setContentType("application/json");
                 resp.setCharacterEncoding("UTF-8");
                 resp.setStatus(ServiceException.Type.MISSING_FIELD_CODE.getCode());
-                resp.getWriter().write(ServiceException.Type.MISSING_FIELD_CODE.getMessage());
+                resp.getWriter().write(MAPPER.writeValueAsString(ServiceException.Type.MISSING_FIELD_CODE.getMessage()));
             }
         }
-        catch (NumberFormatException numberFormatException){
+        catch (NumberFormatException | NullPointerException numberFormatException ){
+            sendErrorJson(ServiceException.Type.MISSING_FIELD_CODE ,resp);
             resp.setStatus(ServiceException.Type.NOT_INTEGER_CODE.getCode());
-            resp.setContentType("application/json");
-            resp.setCharacterEncoding("UTF-8");
-            resp.getWriter().write(ServiceException.Type.NOT_INTEGER_CODE.getMessage());
         }
         catch (ServiceException serviceException){
             if (ServiceException.Type.DUPLICATE_EXCHANGE_RATE_CODE == serviceException.getType()){
-                resp.setStatus(ServiceException.Type.DUPLICATE_EXCHANGE_RATE_CODE.getCode());
-                resp.setContentType("application/json");
-                resp.setCharacterEncoding("UTF-8");
-                resp.getWriter().write(ServiceException.Type.DUPLICATE_EXCHANGE_RATE_CODE.getMessage());
+                sendErrorJson(ServiceException.Type.DUPLICATE_EXCHANGE_RATE_CODE, resp);
+            }
+            if (ServiceException.Type.MISSING_FIELD_CODE == serviceException.getType()){
+                sendErrorJson(ServiceException.Type.MISSING_FIELD_CODE,resp);
+            }
+            if (ServiceException.Type.CURRENCY_NOT_FOUND == serviceException.getType()){
+                sendErrorJson(ServiceException.Type.CURRENCY_NOT_FOUND,resp);
             }
         }
     }
@@ -79,7 +83,15 @@ public class ExchangeRatesServlet extends HttpServlet {
         String targetCurrencyId= req.getParameter("targetCurrencyCode");
         BigDecimal rate = new BigDecimal(req.getParameter("rate"));
 
-        return baseCurrencyId.isBlank() && targetCurrencyId.isBlank() ;
+        if (baseCurrencyId.length() < 3 || targetCurrencyId.length() < 3){
+            throw new ServiceException(ServiceException.Type.MISSING_FIELD_CODE);
+        }
+        if( baseCurrencyId == null || targetCurrencyId == null){
+            throw new ServiceException(ServiceException.Type.MISSING_FIELD_CODE);
+        }
+
+
+        return false;
     }
     @Override
     public void init(){

@@ -2,24 +2,26 @@ package org.kamilkhusainov.currency.servlet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.kamilkhusainov.currency.entity.CurrenciesEntity;
+import org.kamilkhusainov.currency.exceptions.ServiceException;
 import org.kamilkhusainov.currency.infrastructure.AppContainer;
 import org.kamilkhusainov.currency.service.CurrencyService;
+import util.ResponseUtil;
 
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.sql.PreparedStatement;
 
-@WebServlet("/currencies/currency/*")
+import static util.ResponseUtil.sendErrorJson;
+import static util.ResponseUtil.sendOkJson;
+
+@WebServlet("/currency/*")
 public class CurrencyServlet extends HttpServlet {
     private CurrencyService currencyService;
-    private final ObjectMapper MAPPER = new ObjectMapper();
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        response.setStatus(200);
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
         String requestPathInfo = request.getPathInfo();
         requestPathInfo = requestPathInfo.substring(1);
         try {
@@ -28,9 +30,25 @@ public class CurrencyServlet extends HttpServlet {
         catch (StringIndexOutOfBoundsException e){
             //игнорируем ошибку,ничего страшного
         }
-        CurrenciesEntity entity  = currencyService.findByCode(requestPathInfo);
-        MAPPER.writeValue(response.getWriter(), entity);
+        try {
+            if (!isInvalidRequest(requestPathInfo,response)) {
+                CurrenciesEntity entity = currencyService.findByCode(requestPathInfo);
+
+                sendOkJson(response, entity);
+            }
+        }
+        catch (ServiceException e){
+            sendErrorJson(ServiceException.Type.CURRENCY_NOT_FOUND,response);
+        }
     }
+    private boolean isInvalidRequest(String requestPathInfo, HttpServletResponse response) throws IOException {
+        if (requestPathInfo.length() < 3){
+            sendErrorJson(ServiceException.Type.CURRENCY_CODE_MISSING,response);
+            return true;
+        }
+        return false;
+    }
+
     @Override
     public void init(){
         AppContainer appContainer = (AppContainer) getServletContext().getAttribute("appContainer");

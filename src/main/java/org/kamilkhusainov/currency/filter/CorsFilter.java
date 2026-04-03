@@ -17,7 +17,7 @@ public class CorsFilter implements Filter {
 
         String origin = request.getHeader("Origin");
 
-        if ("http://localhost".equals(origin) || "http://localhost:80".equals(origin)) {
+        if ("http://localhost".equals(origin) || "http://localhost:80".equals(origin) || "https://bec0-178-208-82-152.ngrok-free.app".equals(origin) || "https://bec0-178-208-82-152.ngrok-free.app:80".equals(origin)) {
             response.setHeader("Access-Control-Allow-Origin", origin);
             response.setHeader("Vary", "Origin");
             response.setHeader("Access-Control-Allow-Methods", "GET,POST,PATCH,PUT,DELETE,OPTIONS");

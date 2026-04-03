@@ -19,19 +19,25 @@ public class CurrencyService {
         return currencyDao.findAll();
     }
     public CurrenciesEntity findByCode(String code){
-        return currencyDao.findByCode(code);
+        if (currencyDao.findByCode(code).isPresent()){
+            return currencyDao.findByCode(code).get();
+        }
+        else{
+            throw new ServiceException(ServiceException.Type.CURRENCY_NOT_FOUND);
+        }
+
     }
     public CurrenciesEntity findById(long id){
         return currencyDao.findById(id);
     }
-    public void create(Currency currency){
+    public CurrenciesEntity create(Currency currency){
         try {
-            currencyDao.insert(currency);
+            long id = currencyDao.insert(currency);
+            return findById(id);
         }
         catch (DaoException daoException){
             throw new ServiceException(daoException.getMessage(),daoException.getCause());
         }
-
     }
 
 

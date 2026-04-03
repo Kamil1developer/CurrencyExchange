@@ -10,6 +10,7 @@ public class DaoException extends RuntimeException{
     }
     public enum Type {
         CONSTRAINT_UNIQUE(SQLiteErrorCode.SQLITE_CONSTRAINT.message,SQLiteErrorCode.SQLITE_CONSTRAINT.code);
+        
         private final String message;
         private final int code;
         Type(String message,Integer code){

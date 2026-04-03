@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 @WebServlet("/exchangeRate/*")
 public class ExchangeRateServlet extends HttpServlet {
     private ExchangeRateService exchangeRateService;
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper MAPPER = new ObjectMapper();
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
@@ -40,7 +40,7 @@ public class ExchangeRateServlet extends HttpServlet {
             if (!rate.isEmpty()) {
                 String exchangeRateCodes = req.getPathInfo().substring(1);
                 Map<String, Object> map = exchangeRateService.patch(exchangeRateCodes, rate);
-                String json = mapper.writeValueAsString(map);
+                String json = MAPPER.writeValueAsString(map);
 
                 resp.setContentType("application/json");
                 resp.setCharacterEncoding("UTF-8");
@@ -51,7 +51,7 @@ public class ExchangeRateServlet extends HttpServlet {
                 resp.setStatus(ServiceException.Type.MISSING_FIELD_CODE.getCode());
                 resp.setContentType("application/json");
                 resp.setCharacterEncoding("UTF-8");
-                resp.getWriter().write(ServiceException.Type.MISSING_FIELD_CODE.getMessage());
+                resp.getWriter().write(MAPPER.writeValueAsString(ServiceException.Type.MISSING_FIELD_CODE.getMessage()));
             }
         }
         catch (ServiceException serviceException) {
