@@ -4,6 +4,7 @@ import org.kamilkhusainov.currency.CurrencyConstants;
 import org.kamilkhusainov.currency.dao.ExchangeRateDao;
 import org.kamilkhusainov.currency.entity.CurrenciesEntity;
 import org.kamilkhusainov.currency.entity.ExchangeRateEntity;
+import org.kamilkhusainov.currency.exceptions.ServiceException;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -23,7 +24,8 @@ public class ExchangeAmountService {
     public Map<String, Object> existsExchangeRate(String from, String to, BigDecimal amount){
         Map<String,String> exchangeRateCodes = exchangeRateService.findExchangeRateCodes(from + to);
         if (exchangeRateCodes.isEmpty()){
-            if (existsReverseExchangeRate(to,from).isEmpty()){
+            Map<String, String> reverseExists = existsReverseExchangeRate(to,from);
+            if (reverseExists.isEmpty()){
                 Optional<List<ExchangeRateEntity>> crossExchangeRates = findCrossExchangeRate(from,to);
                 if (crossExchangeRates.isPresent()) {
                     Map<String, Object> linkedHashMap = new LinkedHashMap<>();
@@ -36,12 +38,17 @@ public class ExchangeAmountService {
                     linkedHashMap.put("convertedAmount", rate.multiply(amount));
                     return linkedHashMap;
                 }
-                return Map.of();
+                else{
+                    return Map.of();
+                }
             }
-            return Map.of();
+            CurrenciesEntity baseCurrency = currencyService.findByCode(reverseExists.get("targetCurrencyCode"));
+            CurrenciesEntity targetCurrency = currencyService.findByCode(reverseExists.get("baseCurrencyCode"));
+            BigDecimal rate = exchangeRateDao.getRate(baseCurrency.id(), targetCurrency.id());
+            return toJson(baseCurrency,targetCurrency,rate,amount);
         }
-        CurrenciesEntity baseCurrency = currencyService.findByCode(exchangeRateCodes.get("baseCurrency"));
-        CurrenciesEntity targetCurrency = currencyService.findByCode(exchangeRateCodes.get("targetCurrency"));
+        CurrenciesEntity baseCurrency = currencyService.findByCode(exchangeRateCodes.get("baseCurrencyCode"));
+        CurrenciesEntity targetCurrency = currencyService.findByCode(exchangeRateCodes.get("targetCurrencyCode"));
         BigDecimal rate = exchangeRateDao.getRate(baseCurrency.id(), targetCurrency.id());
         return toJson(baseCurrency,targetCurrency,rate,amount);
     }

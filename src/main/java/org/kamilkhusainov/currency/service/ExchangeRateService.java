@@ -72,7 +72,7 @@ public class ExchangeRateService {
         throw new ServiceException(ServiceException.Type.EXCHANGE_RATE_NOT_FOUND);
     }
     public Map<String,String> findExchangeRateCodes(String currencyCodes){
-        List<ExchangeRateEntity> exchangeRateEntityList = exchangeRateDao.findAll();
+        List<ExchangeRateEntity> exchangeRateEntityList = exchangeRateEntityList = exchangeRateDao.findAll();
         for(ExchangeRateEntity exchangeRateEntity:exchangeRateEntityList) {
             CurrenciesEntity baseCurrency = currencyService.findById(exchangeRateEntity.baseCurrencyId());
             CurrenciesEntity targetCurrency = currencyService.findById(exchangeRateEntity.targetCurrencyId());

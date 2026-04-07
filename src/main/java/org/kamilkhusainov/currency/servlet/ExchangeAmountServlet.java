@@ -15,6 +15,8 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Map;
 
+import static util.ResponseUtil.sendOkJson;
+
 @WebServlet("/exchange/*")
 public class ExchangeAmountServlet extends HttpServlet {
     private final ObjectMapper MAPPER = new ObjectMapper();
@@ -27,10 +29,10 @@ public class ExchangeAmountServlet extends HttpServlet {
             BigDecimal amount = new BigDecimal(req.getParameter("amount"));
             Map<String, Object> body = exchangeAmountService.existsExchangeRate(from,to,amount);
             if (!body.isEmpty()) {
-                ResponseUtil.sendOkJson(resp,body);
+                sendOkJson(resp,body);
             }
             else {
-                ResponseUtil.sendOkJson(resp,Map.of("message","Валюта не найдена"));
+                sendOkJson(resp,Map.of("message","Валюта не найдена"));
             }
         }
     }
