@@ -22,7 +22,10 @@ public class ServiceException extends RuntimeException{
         MAX_SIGN_LENGTH("Длина знака больше 3 ",400),
         CURRENCY_CODE_MISSING("Код валюты отсутствует в адресе", 400),
         DATABASE_ERROR("База данных недоступна",501),
-        CURRENCY_NOT_FOUND("Валюта не найдена",404);
+        CURRENCY_NOT_FOUND("Валюта не найдена",404),
+        RATE_NOT_FOUND("Курс отсуствует", 400),
+        EXCHANGE_RATE_NOT_FOUND("Обменный курс для пары не найден", 400),
+        EXCHANGE_RATES_NOT_FOUND("Коды валют пары отсутствуют в адресе", 400);
         private final Map<String,String> map = new HashMap<>();
         private final int code;
         Type( String message, int code){

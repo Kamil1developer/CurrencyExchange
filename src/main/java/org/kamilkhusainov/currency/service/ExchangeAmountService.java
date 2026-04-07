@@ -27,6 +27,7 @@ public class ExchangeAmountService {
                 Optional<List<ExchangeRateEntity>> crossExchangeRates = findCrossExchangeRate(from,to);
                 if (crossExchangeRates.isPresent()) {
                     Map<String, Object> linkedHashMap = new LinkedHashMap<>();
+                    currencyService.findById(crossExchangeRates.get().get(CurrencyConstants.INDEX_CROSS_FIRST_PAIR.getValue()).id());
                     linkedHashMap.put("baseCurrency",currencyService.findById(crossExchangeRates.get().get(CurrencyConstants.INDEX_CROSS_FIRST_PAIR.getValue()).id()));
                     linkedHashMap.put("targetCurrency",currencyService.findById(crossExchangeRates.get().get(CurrencyConstants.INDEX_CROSS_SECOND_PAIR.getValue()).id()));
                     BigDecimal rate = convertAmountOfCross(crossExchangeRates.get());
@@ -39,7 +40,19 @@ public class ExchangeAmountService {
             }
             return Map.of();
         }
-        return Map.of();
+        CurrenciesEntity baseCurrency = currencyService.findByCode(exchangeRateCodes.get("baseCurrency"));
+        CurrenciesEntity targetCurrency = currencyService.findByCode(exchangeRateCodes.get("targetCurrency"));
+        BigDecimal rate = exchangeRateDao.getRate(baseCurrency.id(), targetCurrency.id());
+        return toJson(baseCurrency,targetCurrency,rate,amount);
+    }
+    private Map<String, Object> toJson(CurrenciesEntity baseCurrency, CurrenciesEntity targetCurrency,BigDecimal rate, BigDecimal amount){
+        Map<String, Object> linkedHashMap = new LinkedHashMap<>();
+        linkedHashMap.put("baseCurrency",baseCurrency);
+        linkedHashMap.put("targetCurrency",targetCurrency);
+        linkedHashMap.put("rate",rate);
+        linkedHashMap.put("amount", amount);
+        linkedHashMap.put("convertedAmount", rate.multiply(amount));
+        return linkedHashMap;
     }
     public Map<String,String> existsReverseExchangeRate(String to, String from){
         return exchangeRateService.findExchangeRateCodes(to + from);

@@ -1,8 +1,10 @@
 package org.kamilkhusainov.currency.servlet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.kamilkhusainov.currency.exceptions.ServiceException;
 import org.kamilkhusainov.currency.infrastructure.AppContainer;
 import org.kamilkhusainov.currency.service.ExchangeAmountService;
+import util.ResponseUtil;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -25,16 +27,10 @@ public class ExchangeAmountServlet extends HttpServlet {
             BigDecimal amount = new BigDecimal(req.getParameter("amount"));
             Map<String, Object> body = exchangeAmountService.existsExchangeRate(from,to,amount);
             if (!body.isEmpty()) {
-                resp.setContentType("/application/json");
-                resp.setStatus(200);
-                resp.setCharacterEncoding("UTF-8");
-                resp.getWriter().write(MAPPER.writeValueAsString(body));
+                ResponseUtil.sendOkJson(resp,body);
             }
             else {
-                resp.setStatus(400);
-                resp.setContentType("application/json");
-                resp.setCharacterEncoding("UTF-8");
-                resp.getWriter().write(MAPPER.writeValueAsString(Map.of("message","Валюта не найдена")));
+                ResponseUtil.sendOkJson(resp,Map.of("message","Валюта не найдена"));
             }
         }
     }

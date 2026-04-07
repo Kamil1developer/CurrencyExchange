@@ -21,6 +21,19 @@ public class ExchangeRateDao {
     public ExchangeRateDao(DataSource dataSource){
         this.dataSource = dataSource;
     }
+    public BigDecimal getRate(long baseCurrencyId, long targetCurrencyId){
+        try (Connection connection = dataSource.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM ExchangeRates WHERE BaseCurrencyId = ? AND TargetCurrencyId = ?");
+            preparedStatement.setLong(1, baseCurrencyId);
+            preparedStatement.setLong(2, targetCurrencyId);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            return resultSet.getBigDecimal("Rate");
+
+        }
+        catch (SQLException e){
+            throw new RuntimeException();
+        }
+    }
     public int insert(long baseCurrencyId, long targetCurrencyId, BigDecimal rate){
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO ExchangeRates(BaseCurrencyId, TargetCurrencyId, Rate) " +
@@ -82,22 +95,22 @@ public class ExchangeRateDao {
             throw new RuntimeException(e);
         }
     }
-    public List<ExchangeRateEntity> findAllPairs(long baseCurrencyId){
+
+    public List<ExchangeRateEntity> findAllPairs(long baseCurrencyId) {
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM ExchangeRates WHERE BaseCurrencyId = ?");
             preparedStatement.setLong(1, baseCurrencyId);
             ResultSet resultSet = preparedStatement.executeQuery();
             List<ExchangeRateEntity> entityList = new LinkedList<>();
-            while (resultSet.next()){
+            while (resultSet.next()) {
                 ExchangeRateEntity entity = new ExchangeRateEntity(resultSet.getLong("ID"),
                         resultSet.getInt("BaseCurrencyId"),
-                        resultSet.getInt("TargetCurrencyId"),resultSet.getBigDecimal("Rate"));
+                        resultSet.getInt("TargetCurrencyId"), resultSet.getBigDecimal("Rate"));
                 entityList.add(entity);
             }
             resultSet.close();
             return entityList;
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }

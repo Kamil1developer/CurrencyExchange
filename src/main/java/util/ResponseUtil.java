@@ -15,6 +15,7 @@ public class ResponseUtil {
         response.setCharacterEncoding("UTF-8");
         response.getWriter().write(MAPPER.writeValueAsString(error.getMessage()));
     }
+
     public static void sendErrorCode(ServiceException.Type error, HttpServletResponse response) throws IOException {
         response.setStatus(error.getCode());
         response.setContentType("application/json");

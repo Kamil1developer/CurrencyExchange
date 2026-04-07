@@ -1,4 +1,4 @@
-TOMCAT="/Users/kamilhus/Downloads/apache-tomcat-9.0.115"
+TOMCAT="/Users/kamilhus/tomcat-currency/apache-tomcat-9.0.115"
 PROJECT="/Users/kamilhus/IdeaProjects/Currency exchange"
 MAVEN="/Applications/IntelliJ IDEA CE.app/Contents/plugins/maven/lib/maven3/bin/mvn"
 
