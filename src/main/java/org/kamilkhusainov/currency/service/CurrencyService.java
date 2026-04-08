@@ -7,7 +7,6 @@ import org.kamilkhusainov.currency.exceptions.ServiceException;
 import org.kamilkhusainov.currency.model.Currency;
 
 import java.util.List;
-import java.util.Optional;
 
 public class CurrencyService {
     private final CurrencyDao currencyDao;

@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Map;
+import java.util.Optional;
 
 import static util.ResponseUtil.sendErrorJson;
 import static util.ResponseUtil.sendOkJson;
@@ -27,7 +28,7 @@ public class ExchangeAmountServlet extends HttpServlet {
             String from = req.getParameter("from");
             String to = req.getParameter("to");
             BigDecimal amount = new BigDecimal(req.getParameter("amount"));
-            ExchangeRateAmountDto body = exchangeAmountService.existsExchangeRate(from,to,amount);
+            Optional<ExchangeRateAmountDto> body = exchangeAmountService.existsExchangeRate(from,to,amount);
             if (!body.isEmpty()) {
                 sendOkJson(resp,body);
             }

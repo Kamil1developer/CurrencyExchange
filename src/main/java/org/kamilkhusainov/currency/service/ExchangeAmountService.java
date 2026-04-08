@@ -19,7 +19,6 @@ public class ExchangeAmountService {
     public ExchangeAmountService(ExchangeRateDao exchangeRateDao, ExchangeRateService exchangeRateService, CurrencyService currencyService) {
         this.exchangeRateService = exchangeRateService;
         this.exchangeRateDao = exchangeRateDao;
-
         this.currencyService = currencyService;
     }
     public Optional<ExchangeRateAmountDto> existsExchangeRate(String from, String to, BigDecimal amount){
