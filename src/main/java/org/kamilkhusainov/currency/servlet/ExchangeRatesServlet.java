@@ -26,16 +26,11 @@ public class ExchangeRatesServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
-            resp.setContentType("application/json");
-            resp.setStatus(200);
             List<Map<String, Object>> list = exchangeRateService.findAll();
-            resp.getWriter().write(MAPPER.writeValueAsString(list));
+            ResponseUtil.sendOkJson(resp,list);
         }
         catch (RuntimeException e) {
-            resp.setContentType("application/json");
-            resp.setCharacterEncoding("UTF-8");
-            resp.setStatus(ServiceException.Type.DATABASE_ERROR.getCode());
-            resp.getWriter().write(MAPPER.writeValueAsString(ServiceException.Type.DATABASE_ERROR.getMessage()));
+            ResponseUtil.sendErrorJson(ServiceException.Type.DATABASE_ERROR, resp);
         }
     }
 
@@ -55,10 +50,7 @@ public class ExchangeRatesServlet extends HttpServlet {
                 resp.setStatus(201);
                 resp.getWriter().write(json);
             } else {
-                resp.setContentType("application/json");
-                resp.setCharacterEncoding("UTF-8");
-                resp.setStatus(ServiceException.Type.MISSING_FIELD_CODE.getCode());
-                resp.getWriter().write(MAPPER.writeValueAsString(ServiceException.Type.MISSING_FIELD_CODE.getMessage()));
+                sendErrorJson(ServiceException.Type.MISSING_FIELD_CODE, resp);
             }
         }
         catch (NumberFormatException | NullPointerException numberFormatException ){

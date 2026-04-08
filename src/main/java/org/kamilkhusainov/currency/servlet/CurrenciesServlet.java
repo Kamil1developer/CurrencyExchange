@@ -6,6 +6,7 @@ import org.kamilkhusainov.currency.exceptions.ServiceException;
 import org.kamilkhusainov.currency.infrastructure.AppContainer;
 import org.kamilkhusainov.currency.service.CurrencyService;
 import org.kamilkhusainov.currency.model.Currency;
+import util.ResponseUtil;
 
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -24,12 +25,8 @@ public class CurrenciesServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        response.setStatus(200);
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
         List<CurrenciesEntity> entityList = currencyService.findAll();
-        MAPPER.writeValue(response.getWriter(), entityList);
-
+        ResponseUtil.sendOkJson(response, entityList);
     }
 
     @Override
@@ -57,10 +54,7 @@ public class CurrenciesServlet extends HttpServlet {
             response.setCharacterEncoding("UTF-8");
             response.getWriter().write(MAPPER.writeValueAsString(currencyEntity));
         } catch (ServiceException serviceException) {
-            response.setStatus(ServiceException.Type.DUPLICATE_CURRENCY_CODE.getCode());
-            response.setContentType("application/json");
-            response.setCharacterEncoding("UTF-8");
-            response.getWriter().write(MAPPER.writeValueAsString(ServiceException.Type.DUPLICATE_CURRENCY_CODE.getMessage()));
+            sendErrorJson(ServiceException.Type.DUPLICATE_CURRENCY_CODE, response);
         }
     }
 

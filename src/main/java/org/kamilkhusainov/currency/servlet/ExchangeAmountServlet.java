@@ -1,10 +1,9 @@
 package org.kamilkhusainov.currency.servlet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.kamilkhusainov.currency.exceptions.ServiceException;
+import org.kamilkhusainov.currency.dto.ExchangeRateAmountDto;
 import org.kamilkhusainov.currency.infrastructure.AppContainer;
 import org.kamilkhusainov.currency.service.ExchangeAmountService;
-import util.ResponseUtil;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -15,6 +14,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Map;
 
+import static util.ResponseUtil.sendErrorJson;
 import static util.ResponseUtil.sendOkJson;
 
 @WebServlet("/exchange/*")
@@ -27,7 +27,7 @@ public class ExchangeAmountServlet extends HttpServlet {
             String from = req.getParameter("from");
             String to = req.getParameter("to");
             BigDecimal amount = new BigDecimal(req.getParameter("amount"));
-            Map<String, Object> body = exchangeAmountService.existsExchangeRate(from,to,amount);
+            ExchangeRateAmountDto body = exchangeAmountService.existsExchangeRate(from,to,amount);
             if (!body.isEmpty()) {
                 sendOkJson(resp,body);
             }

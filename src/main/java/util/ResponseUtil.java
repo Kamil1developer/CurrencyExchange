@@ -13,13 +13,7 @@ public class ResponseUtil {
         response.setStatus(error.getCode());
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
-        response.getWriter().write(MAPPER.writeValueAsString(error.getMessage()));
-    }
-
-    public static void sendErrorCode(ServiceException.Type error, HttpServletResponse response) throws IOException {
-        response.setStatus(error.getCode());
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
+        MAPPER.writeValue(response.getWriter(), error.getMessage());
     }
     public static void sendOkJson(HttpServletResponse response,Object object) throws IOException {
         response.setStatus(200);

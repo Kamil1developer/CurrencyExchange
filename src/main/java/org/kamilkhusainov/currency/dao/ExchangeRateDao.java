@@ -27,8 +27,10 @@ public class ExchangeRateDao {
             preparedStatement.setLong(1, baseCurrencyId);
             preparedStatement.setLong(2, targetCurrencyId);
             ResultSet resultSet = preparedStatement.executeQuery();
-            return resultSet.getBigDecimal("Rate");
-
+            if (resultSet.next()){
+                return resultSet.getBigDecimal("Rate");
+            }
+            throw  new DaoException("Rate не имеет значения ");
         }
         catch (SQLException e){
             throw new RuntimeException();

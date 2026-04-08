@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.kamilkhusainov.currency.dto.ExchangeRateDto;
 import org.kamilkhusainov.currency.exceptions.ServiceException;
 import org.kamilkhusainov.currency.infrastructure.AppContainer;
-import org.kamilkhusainov.currency.infrastructure.Infrastructure;
 import org.kamilkhusainov.currency.service.ExchangeRateService;
 import util.ResponseUtil;
 
@@ -82,17 +81,6 @@ public class ExchangeRateServlet extends HttpServlet {
         }
         catch (NumberFormatException numberFormatException){
             sendErrorJson(ServiceException.Type.EXCHANGE_RATES_NOT_FOUND,resp);
-        }
-    }
-    private boolean isInvalidRequest(HttpServletRequest request,HttpServletResponse response) throws IOException {
-        String code = request.getParameter("code");
-        String name = request.getParameter("name");
-        String sign = request.getParameter("sign");
-        try {
-            return name.isBlank() || code.isBlank() || sign.isBlank();
-        } catch (NullPointerException e) {
-            sendErrorJson(ServiceException.Type.EXCHANGE_RATES_NOT_FOUND, response);
-            return true;
         }
     }
     private String parseRate(HttpServletRequest req) throws IOException {

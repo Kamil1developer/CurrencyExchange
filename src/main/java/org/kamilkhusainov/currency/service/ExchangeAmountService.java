@@ -2,9 +2,10 @@ package org.kamilkhusainov.currency.service;
 
 import org.kamilkhusainov.currency.CurrencyConstants;
 import org.kamilkhusainov.currency.dao.ExchangeRateDao;
+import org.kamilkhusainov.currency.dto.ExchangeRateAmountDto;
 import org.kamilkhusainov.currency.entity.CurrenciesEntity;
 import org.kamilkhusainov.currency.entity.ExchangeRateEntity;
-import org.kamilkhusainov.currency.exceptions.ServiceException;
+import org.kamilkhusainov.currency.mapper.ExchangeRateMapper;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -21,45 +22,31 @@ public class ExchangeAmountService {
 
         this.currencyService = currencyService;
     }
-    public Map<String, Object> existsExchangeRate(String from, String to, BigDecimal amount){
+    public Optional<ExchangeRateAmountDto> existsExchangeRate(String from, String to, BigDecimal amount){
         Map<String,String> exchangeRateCodes = exchangeRateService.findExchangeRateCodes(from + to);
         if (exchangeRateCodes.isEmpty()){
             Map<String, String> reverseExists = existsReverseExchangeRate(to,from);
             if (reverseExists.isEmpty()){
                 Optional<List<ExchangeRateEntity>> crossExchangeRates = findCrossExchangeRate(from,to);
                 if (crossExchangeRates.isPresent()) {
-                    Map<String, Object> linkedHashMap = new LinkedHashMap<>();
-                    currencyService.findById(crossExchangeRates.get().get(CurrencyConstants.INDEX_CROSS_FIRST_PAIR.getValue()).id());
-                    linkedHashMap.put("baseCurrency",currencyService.findById(crossExchangeRates.get().get(CurrencyConstants.INDEX_CROSS_FIRST_PAIR.getValue()).id()));
-                    linkedHashMap.put("targetCurrency",currencyService.findById(crossExchangeRates.get().get(CurrencyConstants.INDEX_CROSS_SECOND_PAIR.getValue()).id()));
+                    CurrenciesEntity baseCurrency = currencyService.findById(crossExchangeRates.get().get(CurrencyConstants.INDEX_CROSS_FIRST_PAIR.getValue()).id());
+                    CurrenciesEntity targetCurrency = currencyService.findById(crossExchangeRates.get().get(CurrencyConstants.INDEX_CROSS_SECOND_PAIR.getValue()).id());
                     BigDecimal rate = convertAmountOfCross(crossExchangeRates.get());
-                    linkedHashMap.put("rate",rate);
-                    linkedHashMap.put("amount", amount);
-                    linkedHashMap.put("convertedAmount", rate.multiply(amount));
-                    return linkedHashMap;
+                    return Optional.of(ExchangeRateMapper.toJson(baseCurrency,targetCurrency,rate,amount));
                 }
                 else{
-                    return Map.of();
+                    return Optional.empty();
                 }
             }
             CurrenciesEntity baseCurrency = currencyService.findByCode(reverseExists.get("targetCurrencyCode"));
             CurrenciesEntity targetCurrency = currencyService.findByCode(reverseExists.get("baseCurrencyCode"));
-            BigDecimal rate = exchangeRateDao.getRate(baseCurrency.id(), targetCurrency.id());
-            return toJson(baseCurrency,targetCurrency,rate,amount);
+            BigDecimal rate = exchangeRateDao.getRate(targetCurrency.id(), baseCurrency.id());
+            return Optional.of(ExchangeRateMapper.toJson(baseCurrency,targetCurrency,rate,amount));
         }
         CurrenciesEntity baseCurrency = currencyService.findByCode(exchangeRateCodes.get("baseCurrencyCode"));
         CurrenciesEntity targetCurrency = currencyService.findByCode(exchangeRateCodes.get("targetCurrencyCode"));
         BigDecimal rate = exchangeRateDao.getRate(baseCurrency.id(), targetCurrency.id());
-        return toJson(baseCurrency,targetCurrency,rate,amount);
-    }
-    private Map<String, Object> toJson(CurrenciesEntity baseCurrency, CurrenciesEntity targetCurrency,BigDecimal rate, BigDecimal amount){
-        Map<String, Object> linkedHashMap = new LinkedHashMap<>();
-        linkedHashMap.put("baseCurrency",baseCurrency);
-        linkedHashMap.put("targetCurrency",targetCurrency);
-        linkedHashMap.put("rate",rate);
-        linkedHashMap.put("amount", amount);
-        linkedHashMap.put("convertedAmount", rate.multiply(amount));
-        return linkedHashMap;
+        return Optional.of(ExchangeRateMapper.toJson(baseCurrency,targetCurrency,rate,amount));
     }
     public Map<String,String> existsReverseExchangeRate(String to, String from){
         return exchangeRateService.findExchangeRateCodes(to + from);
