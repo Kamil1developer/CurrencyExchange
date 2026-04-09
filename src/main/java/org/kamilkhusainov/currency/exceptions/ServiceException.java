@@ -24,7 +24,7 @@ public class ServiceException extends RuntimeException{
         DATABASE_ERROR("База данных недоступна",501),
         CURRENCY_NOT_FOUND("Валюта не найдена",404),
         RATE_NOT_FOUND("Курс отсуствует", 400),
-        EXCHANGE_RATE_NOT_FOUND("Обменный курс для пары не найден", 400),
+        EXCHANGE_RATE_NOT_FOUND("Обменный курс для пары не найден", 404),
         EXCHANGE_RATES_NOT_FOUND("Коды валют пары отсутствуют в адресе", 400);
         private final Map<String,String> map = new HashMap<>();
         private final int code;
