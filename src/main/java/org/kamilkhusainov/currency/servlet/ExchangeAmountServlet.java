@@ -29,8 +29,8 @@ public class ExchangeAmountServlet extends HttpServlet {
             String to = req.getParameter("to");
             BigDecimal amount = new BigDecimal(req.getParameter("amount"));
             Optional<ExchangeRateAmountDto> body = exchangeAmountService.existsExchangeRate(from,to,amount);
-            if (!body.isEmpty()) {
-                sendOkJson(resp,body);
+            if (body.isPresent()) {
+                sendOkJson(resp,body.get());
             }
             else {
                 sendOkJson(resp,Map.of("message","Валюта не найдена"));
