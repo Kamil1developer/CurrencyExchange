@@ -1,8 +1,5 @@
 package org.kamilkhusainov.currency.dao;
-
 import org.kamilkhusainov.currency.CurrencyConstants;
-import org.kamilkhusainov.currency.dto.ExchangeRateDto;
-import org.kamilkhusainov.currency.entity.CurrenciesEntity;
 import org.kamilkhusainov.currency.entity.ExchangeRateEntity;
 import org.kamilkhusainov.currency.exceptions.DaoException;
 
@@ -14,7 +11,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
 
 public class ExchangeRateDao {
     private final DataSource dataSource;

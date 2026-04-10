@@ -4,7 +4,7 @@ import org.kamilkhusainov.currency.dto.ExchangeRateDto;
 import org.kamilkhusainov.currency.exceptions.ServiceException;
 import org.kamilkhusainov.currency.infrastructure.AppContainer;
 import org.kamilkhusainov.currency.service.ExchangeRateService;
-import util.ResponseUtil;
+import org.kamilkhusainov.currency.util.ResponseUtil;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -16,7 +16,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
-import static util.ResponseUtil.sendErrorJson;
+import static org.kamilkhusainov.currency.util.ResponseUtil.sendErrorJson;
 
 @WebServlet("/exchangeRates")
 public class ExchangeRatesServlet extends HttpServlet {

@@ -47,11 +47,6 @@ public class CurrencyDatabaseInitializer {
             preparedStatement = connection.prepareStatement(createExchangeRatesTableSql);
             preparedStatement.execute();
             preparedStatement.close();
-//            PreparedStatement preparedStatement = connection.prepareStatement("DROP TABLE Currencies");
-//            preparedStatement.execute();
-//            preparedStatement = connection.prepareStatement("DROP TABLE ExchangeRates");
-//            preparedStatement.execute();
-//            preparedStatement.close();
         }
         catch (SQLException e){
             throw new RuntimeException(e);

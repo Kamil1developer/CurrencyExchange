@@ -1,28 +1,25 @@
 package org.kamilkhusainov.currency.servlet;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.kamilkhusainov.currency.entity.CurrenciesEntity;
 import org.kamilkhusainov.currency.exceptions.ServiceException;
 import org.kamilkhusainov.currency.infrastructure.AppContainer;
 import org.kamilkhusainov.currency.service.CurrencyService;
-import util.ResponseUtil;
 
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.sql.PreparedStatement;
 
-import static util.ResponseUtil.sendErrorJson;
-import static util.ResponseUtil.sendOkJson;
+import static org.kamilkhusainov.currency.util.ResponseUtil.sendErrorJson;
+import static org.kamilkhusainov.currency.util.ResponseUtil.sendOkJson;
 
 @WebServlet("/currency/*")
 public class CurrencyServlet extends HttpServlet {
     private CurrencyService currencyService;
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String requestPathInfo = request.getPathInfo();
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        String requestPathInfo = req.getPathInfo();
         requestPathInfo = requestPathInfo.substring(1);
         try {
             requestPathInfo = requestPathInfo.substring(0, requestPathInfo.indexOf("/"));
@@ -31,19 +28,19 @@ public class CurrencyServlet extends HttpServlet {
             //игнорируем ошибку,ничего страшного
         }
         try {
-            if (!isInvalidRequest(requestPathInfo,response)) {
+            if (!isInvalidRequest(requestPathInfo,resp)) {
                 CurrenciesEntity entity = currencyService.findByCode(requestPathInfo);
 
-                sendOkJson(response, entity);
+                sendOkJson(resp, entity);
             }
         }
         catch (ServiceException e){
-            sendErrorJson(ServiceException.Type.CURRENCY_NOT_FOUND,response);
+            sendErrorJson(ServiceException.Type.CURRENCY_NOT_FOUND,resp);
         }
     }
-    private boolean isInvalidRequest(String requestPathInfo, HttpServletResponse response) throws IOException {
+    private boolean isInvalidRequest(String requestPathInfo, HttpServletResponse resp) throws IOException {
         if (requestPathInfo.length() < 3){
-            sendErrorJson(ServiceException.Type.CURRENCY_CODE_MISSING,response);
+            sendErrorJson(ServiceException.Type.CURRENCY_CODE_MISSING,resp);
             return true;
         }
         return false;

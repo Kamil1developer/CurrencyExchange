@@ -6,7 +6,7 @@ import org.kamilkhusainov.currency.exceptions.ServiceException;
 import org.kamilkhusainov.currency.infrastructure.AppContainer;
 import org.kamilkhusainov.currency.service.CurrencyService;
 import org.kamilkhusainov.currency.model.Currency;
-import util.ResponseUtil;
+import org.kamilkhusainov.currency.util.ResponseUtil;
 
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -15,7 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 
-import static util.ResponseUtil.sendErrorJson;
+import static org.kamilkhusainov.currency.util.ResponseUtil.sendErrorJson;
 
 
 @WebServlet("/currencies")
@@ -24,48 +24,48 @@ public class CurrenciesServlet extends HttpServlet {
     private final ObjectMapper MAPPER = new ObjectMapper();
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         List<CurrenciesEntity> entityList = currencyService.findAll();
-        ResponseUtil.sendOkJson(response, entityList);
+        ResponseUtil.sendOkJson(resp, entityList);
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        request.setCharacterEncoding("UTF-8");
-        if (!isInvalidRequest(request, response)) {
-            if (!isIncorrectValue(request)) {
-                createCurrency(request,response);
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        req.setCharacterEncoding("UTF-8");
+        if (!isInvalidRequest(req, resp)) {
+            if (!isIncorrectValue(req)) {
+                createCurrency(req,resp);
             }
             else{
-                sendErrorJson(ServiceException.Type.MAX_SIGN_LENGTH,response);
+                sendErrorJson(ServiceException.Type.MAX_SIGN_LENGTH,resp);
             }
         } else {
-            sendErrorJson(ServiceException.Type.MISSING_FIELD_CODE, response);
+            sendErrorJson(ServiceException.Type.MISSING_FIELD_CODE, resp);
         }
 
     }
 
-    private void createCurrency(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        Currency currency = new Currency(request.getParameter("name"), request.getParameter("code"), request.getParameter("sign"));
+    private void createCurrency(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        Currency currency = new Currency(req.getParameter("name"), req.getParameter("code"), req.getParameter("sign"));
         try {
             CurrenciesEntity currencyEntity = currencyService.create(currency);
-            response.setStatus(201);
-            response.setContentType("application/json");
-            response.setCharacterEncoding("UTF-8");
-            response.getWriter().write(MAPPER.writeValueAsString(currencyEntity));
+            resp.setStatus(201);
+            resp.setContentType("application/json");
+            resp.setCharacterEncoding("UTF-8");
+            resp.getWriter().write(MAPPER.writeValueAsString(currencyEntity));
         } catch (ServiceException serviceException) {
-            sendErrorJson(ServiceException.Type.DUPLICATE_CURRENCY_CODE, response);
+            sendErrorJson(ServiceException.Type.DUPLICATE_CURRENCY_CODE, resp);
         }
     }
 
-    private boolean isIncorrectValue(HttpServletRequest request){
-        String sign = request.getParameter("sign");
+    private boolean isIncorrectValue(HttpServletRequest req){
+        String sign = req.getParameter("sign");
         return sign.length() > 3;
     }
-    private boolean isInvalidRequest(HttpServletRequest request,HttpServletResponse response) throws IOException {
-        String code = request.getParameter("code");
-        String name = request.getParameter("name");
-        String sign = request.getParameter("sign");
+    private boolean isInvalidRequest(HttpServletRequest req,HttpServletResponse resp) throws IOException {
+        String code = req.getParameter("code");
+        String name = req.getParameter("name");
+        String sign = req.getParameter("sign");
         try {
             return name.isBlank() || code.isBlank() || sign.isBlank();
         } catch (NullPointerException e) {

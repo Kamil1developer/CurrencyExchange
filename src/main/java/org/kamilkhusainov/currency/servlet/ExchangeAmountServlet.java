@@ -6,7 +6,6 @@ import org.kamilkhusainov.currency.exceptions.ServiceException;
 import org.kamilkhusainov.currency.infrastructure.AppContainer;
 import org.kamilkhusainov.currency.service.ExchangeAmountService;
 
-import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -16,15 +15,15 @@ import java.math.BigDecimal;
 import java.util.Map;
 import java.util.Optional;
 
-import static util.ResponseUtil.sendErrorJson;
-import static util.ResponseUtil.sendOkJson;
+import static org.kamilkhusainov.currency.util.ResponseUtil.sendErrorJson;
+import static org.kamilkhusainov.currency.util.ResponseUtil.sendOkJson;
 
 @WebServlet("/exchange/*")
 public class ExchangeAmountServlet extends HttpServlet {
     private final ObjectMapper MAPPER = new ObjectMapper();
     private ExchangeAmountService exchangeAmountService;
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         if (!isInvalidRequest(req,resp)) {
             String from = req.getParameter("from");
             String to = req.getParameter("to");
