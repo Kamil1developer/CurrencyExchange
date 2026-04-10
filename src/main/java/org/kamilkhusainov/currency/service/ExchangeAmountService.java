@@ -76,7 +76,7 @@ public class ExchangeAmountService {
         BigDecimal rateCrossToCurrency1 = listCrossExchangeRates.get(CurrencyConstants.INDEX_CROSS_FIRST_PAIR.getValue()).rate();
         BigDecimal rateCrossToCurrency2 = listCrossExchangeRates.get(CurrencyConstants.INDEX_CROSS_SECOND_PAIR.getValue()).rate();
 
-        return rateCrossToCurrency1.divide(rateCrossToCurrency2,2, RoundingMode.HALF_UP);
+        return rateCrossToCurrency2.divide(rateCrossToCurrency1,2, RoundingMode.HALF_UP);
     }
 
 
