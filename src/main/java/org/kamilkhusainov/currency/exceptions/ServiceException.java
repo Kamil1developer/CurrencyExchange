@@ -26,9 +26,7 @@ public class ServiceException extends RuntimeException{
         EXCHANGE_MISSING("Валюта не найдена",400),
         RATE_NOT_FOUND("Курс отсуствует", 400),
         EXCHANGE_RATE_NOT_FOUND("Обменный курс для пары не найден", 404),
-        EXCHANGE_RATES_NOT_FOUND("Коды валют пары отсутствуют в адресе", 400),
-
-        ;
+        EXCHANGE_RATES_NOT_FOUND("Коды валют пары отсутствуют в адресе", 400);
         private final Map<String,String> map = new HashMap<>();
         private final int code;
         Type( String message, int code){

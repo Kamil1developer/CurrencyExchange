@@ -34,14 +34,17 @@ public class ExchangeAmountServlet extends HttpServlet {
                 sendOkJson(resp,body.get());
             }
             else {
-                sendErrorJson(ServiceException.Type.EXCHANGE_MISSING,resp);
+                sendErrorJson(ServiceException.Type.CURRENCY_NOT_FOUND,resp);
             }
+        }
+        else {
+            sendErrorJson(ServiceException.Type.EXCHANGE_MISSING,resp);
         }
     }
     private boolean isInvalidRequest(HttpServletRequest req,HttpServletResponse resp) throws IOException {
         try {
             Integer.parseInt(req.getParameter("amount"));
-            return false;
+            return req.getParameter("from") == null || req.getParameter("to") == null;
         }
         catch (NumberFormatException numberFormatException){
             resp.setStatus(400);
