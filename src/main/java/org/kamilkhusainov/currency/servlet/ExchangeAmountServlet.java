@@ -2,6 +2,7 @@ package org.kamilkhusainov.currency.servlet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.kamilkhusainov.currency.dto.ExchangeRateAmountDto;
+import org.kamilkhusainov.currency.exceptions.ServiceException;
 import org.kamilkhusainov.currency.infrastructure.AppContainer;
 import org.kamilkhusainov.currency.service.ExchangeAmountService;
 
@@ -33,7 +34,7 @@ public class ExchangeAmountServlet extends HttpServlet {
                 sendOkJson(resp,body.get());
             }
             else {
-                sendOkJson(resp,Map.of("message","Валюта не найдена"));
+                sendErrorJson(ServiceException.Type.EXCHANGE_MISSING,resp);
             }
         }
     }
