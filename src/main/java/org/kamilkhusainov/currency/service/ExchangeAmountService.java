@@ -39,7 +39,7 @@ public class ExchangeAmountService {
             }
             CurrenciesEntity baseCurrency = currencyService.findByCode(reverseExists.get("targetCurrencyCode"));
             CurrenciesEntity targetCurrency = currencyService.findByCode(reverseExists.get("baseCurrencyCode"));
-            BigDecimal rate = BigDecimal.ONE.divide(exchangeRateDao.getRate(targetCurrency.id(), baseCurrency.id()),15);
+            BigDecimal rate = BigDecimal.ONE.divide(exchangeRateDao.getRate(targetCurrency.id(), baseCurrency.id()),15,RoundingMode.HALF_UP);
             return Optional.of(ExchangeRateMapper.toJson(baseCurrency,targetCurrency,rate,amount));
         }
         CurrenciesEntity baseCurrency = currencyService.findByCode(exchangeRateCodes.get("baseCurrencyCode"));
