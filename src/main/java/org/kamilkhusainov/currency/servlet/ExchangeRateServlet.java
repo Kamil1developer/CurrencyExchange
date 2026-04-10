@@ -38,28 +38,32 @@ public class ExchangeRateServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String requestPathInfo = req.getPathInfo();
+        if(!isInvalidRequest(requestPathInfo)) {
+            try {
+                requestPathInfo = requestPathInfo.substring(1);
+                requestPathInfo = requestPathInfo.substring(0, requestPathInfo.indexOf("/"));
 
-        try {
-            requestPathInfo = requestPathInfo.substring(1);
-            requestPathInfo = requestPathInfo.substring(0, requestPathInfo.indexOf("/"));
 
-
+            } catch (StringIndexOutOfBoundsException e) {
+                //игнорируем ошибку,ничего страшного
+            } catch (NullPointerException e) {
+                sendErrorJson(ServiceException.Type.EXCHANGE_RATES_NOT_FOUND, resp);
+                return;
+            }
+            try {
+                Map<String, Object> map = exchangeRateService.getExchangeRate(requestPathInfo);
+                sendOkJson(resp, map);
+            } catch (ServiceException e) {
+                sendErrorJson(e.getType(), resp);
+            }
         }
-        catch (StringIndexOutOfBoundsException e){
-            //игнорируем ошибку,ничего страшного
-        }
-        catch (NullPointerException e){
-            sendErrorJson(ServiceException.Type.EXCHANGE_RATES_NOT_FOUND, resp);
-            return;
-        }
-        try {
-            Map<String, Object> map = exchangeRateService.getExchangeRate(requestPathInfo);
-            sendOkJson(resp, map);
-        }
-        catch (ServiceException e){
-            sendErrorJson(e.getType(),resp);
+        else {
+            sendErrorJson(ServiceException.Type.EXCHANGE_RATES_NOT_FOUND,resp);
         }
 
+    }
+    private boolean isInvalidRequest(String requestPathInfo){
+        return requestPathInfo.isBlank();
     }
 
     protected void doPatch(HttpServletRequest req, HttpServletResponse resp)
