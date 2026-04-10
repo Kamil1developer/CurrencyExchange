@@ -63,7 +63,10 @@ public class ExchangeRateServlet extends HttpServlet {
 
     }
     private boolean isInvalidRequest(String requestPathInfo){
-        return requestPathInfo.isEmpty();
+        if (!requestPathInfo.isEmpty()){
+            return true;
+        }
+        return false;
     }
 
     protected void doPatch(HttpServletRequest req, HttpServletResponse resp)
