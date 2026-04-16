@@ -2,7 +2,9 @@ package org.kamilkhusainov.currency.servlet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.kamilkhusainov.currency.entity.CurrenciesEntity;
-import org.kamilkhusainov.currency.exceptions.ServiceException;
+import org.kamilkhusainov.currency.exceptions.AlreadyExistsException;
+import org.kamilkhusainov.currency.exceptions.ErrorMessages;
+import org.kamilkhusainov.currency.exceptions.NotFoundException;
 import org.kamilkhusainov.currency.infrastructure.AppContainer;
 import org.kamilkhusainov.currency.service.CurrencyService;
 import org.kamilkhusainov.currency.model.Currency;
@@ -15,7 +17,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 
-import static org.kamilkhusainov.currency.util.ResponseUtil.sendErrorJson;
 
 
 @WebServlet("/currencies")
@@ -37,10 +38,10 @@ public class CurrenciesServlet extends HttpServlet {
                 createCurrency(req,resp);
             }
             else{
-                sendErrorJson(ServiceException.Type.MAX_SIGN_LENGTH,resp);
+                throw new NotFoundException(ErrorMessages.MAX_SIGN_LENGTH);
             }
         } else {
-            sendErrorJson(ServiceException.Type.MISSING_FIELD_CODE, resp);
+            throw new NotFoundException(ErrorMessages.MISSING_FIELD);
         }
 
     }
@@ -53,8 +54,8 @@ public class CurrenciesServlet extends HttpServlet {
             resp.setContentType("application/json");
             resp.setCharacterEncoding("UTF-8");
             resp.getWriter().write(MAPPER.writeValueAsString(currencyEntity));
-        } catch (ServiceException serviceException) {
-            sendErrorJson(ServiceException.Type.DUPLICATE_CURRENCY_CODE, resp);
+        } catch (AlreadyExistsException alreadyExistsException) {
+            throw new AlreadyExistsException(ErrorMessages.DUPLICATE_CURRENCY);
         }
     }
 

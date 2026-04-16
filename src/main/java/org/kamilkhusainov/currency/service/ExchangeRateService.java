@@ -1,15 +1,15 @@
 package org.kamilkhusainov.currency.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.kamilkhusainov.currency.CurrencyConstants;
 import org.kamilkhusainov.currency.dao.ExchangeRateDao;
 import org.kamilkhusainov.currency.dto.ExchangeRateDto;
 import org.kamilkhusainov.currency.entity.CurrenciesEntity;
 import org.kamilkhusainov.currency.entity.ExchangeRateEntity;
-import org.kamilkhusainov.currency.exceptions.DaoException;
-import org.kamilkhusainov.currency.exceptions.ServiceException;
+import org.kamilkhusainov.currency.exceptions.AlreadyExistsException;
+import org.kamilkhusainov.currency.exceptions.ErrorMessages;
+import org.kamilkhusainov.currency.exceptions.NotFoundException;
+import org.kamilkhusainov.currency.exceptions.ValidationException;
 
-import java.awt.*;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.List;
@@ -23,12 +23,12 @@ public class ExchangeRateService {
         this.currencyService = currencyService;
     }
 
-    public Map<String, Object> create(ExchangeRateDto exchangeRateDto) throws JsonProcessingException, DaoException {
+    public Map<String, Object> create(ExchangeRateDto exchangeRateDto) throws JsonProcessingException {
             long baseCurrencyId = currencyService.findByCode(exchangeRateDto.baseCurrencyCode()).id();
             long targetCurrencyId = currencyService.findByCode(exchangeRateDto.targetCurrencyCode()).id();
             BigDecimal rate = new BigDecimal(exchangeRateDto.rate());
             int id = exchangeRateDao.insert(baseCurrencyId,targetCurrencyId,rate);
-            if (id != CurrencyConstants.ALREADY_EXISTS.getValue()) {
+            if (id != 0) {
                 Map<String, Object> linkedHashMap = new LinkedHashMap<>();
                 linkedHashMap.put("id", id);
                 linkedHashMap.put("baseCurrency", currencyService.findById(baseCurrencyId));
@@ -37,7 +37,7 @@ public class ExchangeRateService {
                 return linkedHashMap;
             }
             else {
-                throw new ServiceException(ServiceException.Type.DUPLICATE_EXCHANGE_RATE_CODE);
+                throw new AlreadyExistsException(ErrorMessages.DUPLICATE_EXCHANGE_RATE);
             }
     }
 
@@ -69,7 +69,7 @@ public class ExchangeRateService {
                 return exchangeRateEntity.id();
             }
         }
-        throw new ServiceException(ServiceException.Type.EXCHANGE_RATE_NOT_FOUND);
+        throw new NotFoundException(ErrorMessages.EXCHANGE_RATE_NOT_FOUND);
     }
     public Map<String,String> findExchangeRateCodes(String currencyCodes){
         List<ExchangeRateEntity> exchangeRateEntityList = exchangeRateEntityList = exchangeRateDao.findAll();
@@ -94,9 +94,9 @@ public class ExchangeRateService {
                 return exchangeRateEntity.rate();
             }
         }
-        throw new ServiceException(ServiceException.Type.RATE_NOT_FOUND);
+        throw new NotFoundException(ErrorMessages.RATE_NOT_FOUND);
     }
-    public Map<String, Object> getExchangeRate(String exchangeRateCodes) throws ServiceException{
+    public Map<String, Object> getExchangeRate(String exchangeRateCodes){
         long id = findId(exchangeRateCodes);
         Map<String,String> exchangeRateCodesMap = findExchangeRateCodes(exchangeRateCodes);
         Map<String, Object> linkedHashMap = new LinkedHashMap<>();
@@ -128,7 +128,7 @@ public class ExchangeRateService {
         try {
             new BigDecimal(rate);
         } catch (NumberFormatException numberFormatException) {
-            throw new ServiceException("Поле rate неправильное ",numberFormatException);
+            throw new ValidationException("Поле rate неправильное ",numberFormatException);
         }
         return true;
     }

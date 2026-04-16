@@ -1,7 +1,7 @@
 package org.kamilkhusainov.currency.servlet;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.kamilkhusainov.currency.dto.ExchangeRateDto;
-import org.kamilkhusainov.currency.exceptions.ServiceException;
+import org.kamilkhusainov.currency.exceptions.*;
 import org.kamilkhusainov.currency.infrastructure.AppContainer;
 import org.kamilkhusainov.currency.service.ExchangeRateService;
 import org.kamilkhusainov.currency.util.ResponseUtil;
@@ -16,8 +16,6 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
-import static org.kamilkhusainov.currency.util.ResponseUtil.sendErrorJson;
-
 @WebServlet("/exchangeRates")
 public class ExchangeRatesServlet extends HttpServlet {
     private ExchangeRateService exchangeRateService;
@@ -30,7 +28,7 @@ public class ExchangeRatesServlet extends HttpServlet {
             ResponseUtil.sendOkJson(resp,list);
         }
         catch (RuntimeException e) {
-            ResponseUtil.sendErrorJson(ServiceException.Type.DATABASE_ERROR, resp);
+            throw new DataBaseException(ErrorMessages.DATABASE_ERROR);
         }
     }
 
@@ -50,22 +48,21 @@ public class ExchangeRatesServlet extends HttpServlet {
                 resp.setStatus(201);
                 resp.getWriter().write(json);
             } else {
-                sendErrorJson(ServiceException.Type.MISSING_FIELD_CODE, resp);
+                throw new ValidationException(ErrorMessages.MISSING_FIELD);
             }
         }
         catch (NumberFormatException | NullPointerException numberFormatException ){
-            sendErrorJson(ServiceException.Type.MISSING_FIELD_CODE ,resp);
-            resp.setStatus(ServiceException.Type.NOT_INTEGER_CODE.getCode());
+            throw new ValidationException(ErrorMessages.MISSING_FIELD);
         }
-        catch (ServiceException serviceException){
-            if (ServiceException.Type.DUPLICATE_EXCHANGE_RATE_CODE == serviceException.getType()){
-                sendErrorJson(ServiceException.Type.DUPLICATE_EXCHANGE_RATE_CODE, resp);
+        catch (RuntimeException e){
+            if (ErrorMessages.DUPLICATE_EXCHANGE_RATE.equals(e.getMessage())){
+                throw new AlreadyExistsException(ErrorMessages.DUPLICATE_EXCHANGE_RATE);
             }
-            if (ServiceException.Type.MISSING_FIELD_CODE == serviceException.getType()){
-                sendErrorJson(ServiceException.Type.MISSING_FIELD_CODE,resp);
+            if (ErrorMessages.MISSING_FIELD.equals(e.getMessage())){
+                throw new ValidationException(ErrorMessages.MISSING_FIELD);
             }
-            if (ServiceException.Type.CURRENCY_NOT_FOUND == serviceException.getType()){
-                sendErrorJson(ServiceException.Type.CURRENCY_NOT_FOUND,resp);
+            if (ErrorMessages.CURRENCY_NOT_FOUND.equals(e.getMessage())){
+                throw new NotFoundException(ErrorMessages.CURRENCY_NOT_FOUND);
             }
         }
     }
@@ -76,10 +73,10 @@ public class ExchangeRatesServlet extends HttpServlet {
         BigDecimal rate = new BigDecimal(req.getParameter("rate"));
 
         if (baseCurrencyId.length() < 3 || targetCurrencyId.length() < 3){
-            throw new ServiceException(ServiceException.Type.MISSING_FIELD_CODE);
+            throw new ValidationException(ErrorMessages.MISSING_FIELD);
         }
         if( baseCurrencyId == null || targetCurrencyId == null){
-            throw new ServiceException(ServiceException.Type.MISSING_FIELD_CODE);
+            throw new ValidationException(ErrorMessages.MISSING_FIELD);
         }
 
 

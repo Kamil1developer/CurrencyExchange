@@ -1,7 +1,9 @@
 package org.kamilkhusainov.currency.dao;
-import org.kamilkhusainov.currency.CurrencyConstants;
 import org.kamilkhusainov.currency.entity.ExchangeRateEntity;
-import org.kamilkhusainov.currency.exceptions.DaoException;
+import org.kamilkhusainov.currency.exceptions.AlreadyExistsException;
+import org.kamilkhusainov.currency.exceptions.DataBaseException;
+import org.kamilkhusainov.currency.exceptions.ErrorMessages;
+import org.sqlite.SQLiteErrorCode;
 
 import javax.sql.DataSource;
 import java.math.BigDecimal;
@@ -17,6 +19,7 @@ public class ExchangeRateDao {
     public ExchangeRateDao(DataSource dataSource){
         this.dataSource = dataSource;
     }
+
     public BigDecimal getRate(long baseCurrencyId, long targetCurrencyId){
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM ExchangeRates WHERE BaseCurrencyId = ? AND TargetCurrencyId = ?");
@@ -26,12 +29,13 @@ public class ExchangeRateDao {
             if (resultSet.next()){
                 return resultSet.getBigDecimal("Rate");
             }
-            throw  new DaoException("Rate не имеет значения ");
+            throw new DataBaseException("Rate не имеет значения ");
         }
         catch (SQLException e){
             throw new RuntimeException();
         }
     }
+
     public int insert(long baseCurrencyId, long targetCurrencyId, BigDecimal rate){
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO ExchangeRates(BaseCurrencyId, TargetCurrencyId, Rate) " +
@@ -47,20 +51,19 @@ public class ExchangeRateDao {
             preparedStatement.setLong(5, targetCurrencyId);
             int rows = preparedStatement.executeUpdate();
             if (rows == 0){
-                return CurrencyConstants.ALREADY_EXISTS.getValue();
+                throw new AlreadyExistsException(SQLiteErrorCode.SQLITE_CONSTRAINT.message);
             }
             ResultSet resultSet = preparedStatement.getGeneratedKeys();
             if (resultSet.next()) {
                 return resultSet.getInt(1);
             }
+            return resultSet.getInt(1);
         }
         catch (SQLException e) {
-            if (e.getErrorCode() == DaoException.Type.CONSTRAINT_UNIQUE.getCode()){
-                throw new DaoException(DaoException.Type.CONSTRAINT_UNIQUE.getMessage(),e);
-            }
+            throw new AlreadyExistsException(SQLiteErrorCode.SQLITE_CONSTRAINT.message,e);
         }
-        return -1;
     }
+
     public long findByCodes(long baseCurrencyId,long targetCurrencyId){
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM ExchangeRates WHERE BaseCurrencyId = ? AND TargetCurrencyId = ?");
@@ -112,18 +115,17 @@ public class ExchangeRateDao {
             throw new RuntimeException(e);
         }
     }
+
     public void update(long id, String rate){
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement("UPDATE ExchangeRates SET Rate = ? WHERE ID = ?");
             preparedStatement.setBigDecimal(1, new BigDecimal(rate));
             preparedStatement.setLong(2, id);
-            int rows;
-            rows = preparedStatement.executeUpdate();
-            int b = rows;
+            preparedStatement.executeUpdate();
         }
         catch (SQLException e) {
-            if (e.getErrorCode() == DaoException.Type.CONSTRAINT_UNIQUE.getCode()){
-                throw new DaoException(DaoException.Type.CONSTRAINT_UNIQUE.getMessage(),e);
+            if (e.getErrorCode() == SQLiteErrorCode.SQLITE_CONSTRAINT.code){
+                throw new DataBaseException(SQLiteErrorCode.SQLITE_CONSTRAINT.message,e);
             }
         }
     }

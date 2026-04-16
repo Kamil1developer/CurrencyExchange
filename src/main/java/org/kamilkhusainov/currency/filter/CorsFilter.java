@@ -1,5 +1,11 @@
 package org.kamilkhusainov.currency.filter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.kamilkhusainov.currency.exceptions.AlreadyExistsException;
+import org.kamilkhusainov.currency.exceptions.DataBaseException;
+import org.kamilkhusainov.currency.exceptions.NotFoundException;
+import org.kamilkhusainov.currency.exceptions.ValidationException;
+
 import javax.servlet.*;
 import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
@@ -8,6 +14,8 @@ import java.io.IOException;
 
 @WebFilter("/*")
 public class CorsFilter implements Filter {
+    private final ObjectMapper MAPPER = new ObjectMapper();
+
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse res, FilterChain chain)
             throws IOException, ServletException {
@@ -28,7 +36,30 @@ public class CorsFilter implements Filter {
             resp.setStatus(HttpServletResponse.SC_OK);
             return;
         }
+        HttpServletResponse response = (HttpServletResponse) res;
 
-        chain.doFilter(req, res);
+        try {
+            chain.doFilter(req, res);
+
+        } catch (ValidationException e) {
+            sendError(400, e, resp);
+        }
+        catch (NotFoundException e) {
+            sendError(404, e, resp);
+        }
+        catch (AlreadyExistsException e) {
+            sendError(409, e, resp);
+        }
+        catch (DataBaseException e) {
+            sendError(500, e, resp);
+
+        }
+    }
+
+    public  void sendError(int error, RuntimeException exception, HttpServletResponse resp) throws IOException {
+        resp.setStatus(error);
+        resp.setContentType("application/json");
+        resp.setCharacterEncoding("UTF-8");
+        MAPPER.writeValue(resp.getWriter(), exception.getMessage());
     }
 }

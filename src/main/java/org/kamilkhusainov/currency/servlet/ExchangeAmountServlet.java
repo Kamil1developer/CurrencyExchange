@@ -2,7 +2,9 @@ package org.kamilkhusainov.currency.servlet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.kamilkhusainov.currency.dto.ExchangeRateAmountDto;
-import org.kamilkhusainov.currency.exceptions.ServiceException;
+import org.kamilkhusainov.currency.exceptions.ErrorMessages;
+import org.kamilkhusainov.currency.exceptions.NotFoundException;
+import org.kamilkhusainov.currency.exceptions.ValidationException;
 import org.kamilkhusainov.currency.infrastructure.AppContainer;
 import org.kamilkhusainov.currency.service.ExchangeAmountService;
 
@@ -15,7 +17,6 @@ import java.math.BigDecimal;
 import java.util.Map;
 import java.util.Optional;
 
-import static org.kamilkhusainov.currency.util.ResponseUtil.sendErrorJson;
 import static org.kamilkhusainov.currency.util.ResponseUtil.sendOkJson;
 
 @WebServlet("/exchange/*")
@@ -33,11 +34,11 @@ public class ExchangeAmountServlet extends HttpServlet {
                 sendOkJson(resp,body.get());
             }
             else {
-                sendErrorJson(ServiceException.Type.CURRENCY_NOT_FOUND,resp);
+                throw new NotFoundException(ErrorMessages.CURRENCY_NOT_FOUND);
             }
         }
         else {
-            sendErrorJson(ServiceException.Type.EXCHANGE_MISSING,resp);
+            throw new ValidationException(ErrorMessages.EXCHANGE_MISSING);
         }
     }
     private boolean isInvalidRequest(HttpServletRequest req,HttpServletResponse resp) throws IOException {

@@ -1,7 +1,9 @@
 package org.kamilkhusainov.currency.servlet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.kamilkhusainov.currency.exceptions.ServiceException;
+import org.kamilkhusainov.currency.exceptions.ErrorMessages;
+import org.kamilkhusainov.currency.exceptions.NotFoundException;
+import org.kamilkhusainov.currency.exceptions.ValidationException;
 import org.kamilkhusainov.currency.infrastructure.AppContainer;
 import org.kamilkhusainov.currency.service.ExchangeRateService;
 import javax.servlet.ServletException;
@@ -14,7 +16,6 @@ import java.math.BigDecimal;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static org.kamilkhusainov.currency.util.ResponseUtil.sendErrorJson;
 import static org.kamilkhusainov.currency.util.ResponseUtil.sendOkJson;
 
 @WebServlet("/exchangeRate/*")
@@ -40,8 +41,7 @@ public class ExchangeRateServlet extends HttpServlet {
         } catch (StringIndexOutOfBoundsException e) {
             //игнорируем ошибку,ничего страшного
         } catch (NullPointerException e) {
-            sendErrorJson(ServiceException.Type.EXCHANGE_RATES_NOT_FOUND, resp);
-            return;
+            throw new NotFoundException(ErrorMessages.EXCHANGE_RATES_NOT_FOUND);
         }
         try {
             if(!isInvalidRequest(requestPathInfo)) {
@@ -49,10 +49,10 @@ public class ExchangeRateServlet extends HttpServlet {
                 sendOkJson(resp, map);
             }
             else {
-                sendErrorJson(ServiceException.Type.EXCHANGE_RATES_NOT_FOUND,resp);
+                throw new NotFoundException(ErrorMessages.EXCHANGE_RATES_NOT_FOUND);
             }
-        } catch (ServiceException e) {
-            sendErrorJson(e.getType(), resp);
+        } catch (RuntimeException e) {
+            throw new RuntimeException();
         }
     }
 
@@ -71,14 +71,11 @@ public class ExchangeRateServlet extends HttpServlet {
                 sendOkJson(resp, map);
 
             } else {
-                sendErrorJson(ServiceException.Type.MISSING_FIELD_CODE,resp);
+                throw new ValidationException(ErrorMessages.MISSING_FIELD);
             }
         }
-        catch (ServiceException serviceException) {
-            sendErrorJson(ServiceException.Type.EXCHANGE_RATE_NOT_FOUND,resp);
-        }
-        catch (NumberFormatException numberFormatException){
-            sendErrorJson(ServiceException.Type.EXCHANGE_RATES_NOT_FOUND,resp);
+        catch (RuntimeException e) {
+            throw new NotFoundException(ErrorMessages.EXCHANGE_RATE_NOT_FOUND);
         }
     }
     private String parseRate(HttpServletRequest req) throws IOException {
@@ -89,7 +86,7 @@ public class ExchangeRateServlet extends HttpServlet {
             new BigDecimal(body);
             return body;
         }
-        throw new ServiceException(ServiceException.Type.EXCHANGE_RATES_NOT_FOUND);
+        throw new NotFoundException(ErrorMessages.EXCHANGE_RATES_NOT_FOUND);
     }
     @Override
     public void init(){

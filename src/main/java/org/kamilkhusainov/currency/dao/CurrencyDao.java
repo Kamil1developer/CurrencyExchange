@@ -1,8 +1,9 @@
 package org.kamilkhusainov.currency.dao;
 
 import org.kamilkhusainov.currency.entity.CurrenciesEntity;
-import org.kamilkhusainov.currency.exceptions.DaoException;
+import org.kamilkhusainov.currency.exceptions.DataBaseException;
 import org.kamilkhusainov.currency.model.Currency;
+import org.sqlite.SQLiteErrorCode;
 
 import javax.sql.DataSource;
 import java.sql.*;
@@ -17,6 +18,7 @@ public class CurrencyDao {
     public CurrencyDao(DataSource dataSource){
         this.dataSource = dataSource;
     }
+
     public List<CurrenciesEntity> findAll(){
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM Currencies");
@@ -35,6 +37,7 @@ public class CurrencyDao {
             throw new RuntimeException(e);
         }
     }
+
     public Optional<CurrenciesEntity> findByCode(String code){
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement("SELECT ID,Code,FullName,Sign FROM Currencies WHERE Code = ?");
@@ -53,6 +56,7 @@ public class CurrencyDao {
             throw new RuntimeException(e);
         }
     }
+
     public CurrenciesEntity findById(long id){
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement("SELECT ID,Code,FullName,Sign FROM Currencies WHERE ID = ?");
@@ -71,6 +75,7 @@ public class CurrencyDao {
         }
         return new CurrenciesEntity(-1,"nullNull","nullNull","nullNull");
     }
+
     public long insert(Currency currency){
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO Currencies(Code,FullName,Sign) VALUES (?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
@@ -82,15 +87,14 @@ public class CurrencyDao {
             if (rs.next()) {
                 return rs.getLong(1);
             }
-            throw new DaoException("Не удалось получить сгенерированный ID");
+            throw new DataBaseException("Не удалось получить сгенерированный ID");
 
         }
         catch (SQLException e) {
-            if (e.getErrorCode() == DaoException.Type.CONSTRAINT_UNIQUE.getCode()){
-                throw new DaoException(DaoException.Type.CONSTRAINT_UNIQUE.getMessage(),e);
+            if (e.getErrorCode() == SQLiteErrorCode.SQLITE_CONSTRAINT.code){
+                throw new DataBaseException(e.getMessage(),e);
             }
-            throw new DaoException("Ошибка БД",e);
-
+            throw new DataBaseException("Ошибка БД",e);
         }
     }
 }
