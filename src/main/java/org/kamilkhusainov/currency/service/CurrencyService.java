@@ -2,6 +2,7 @@ package org.kamilkhusainov.currency.service;
 
 import org.kamilkhusainov.currency.dao.CurrencyDao;
 import org.kamilkhusainov.currency.entity.CurrenciesEntity;
+import org.kamilkhusainov.currency.exceptions.AlreadyExistsException;
 import org.kamilkhusainov.currency.exceptions.DataBaseException;
 import org.kamilkhusainov.currency.exceptions.ErrorMessages;
 import org.kamilkhusainov.currency.exceptions.NotFoundException;
@@ -32,13 +33,8 @@ public class CurrencyService {
         return currencyDao.findById(id);
     }
     public CurrenciesEntity create(Currency currency){
-        try {
-            long id = currencyDao.insert(currency);
-            return findById(id);
-        }
-        catch (DataBaseException dataBaseException){
-            throw new DataBaseException(dataBaseException.getMessage());
-        }
+        long id = currencyDao.insert(currency);
+        return findById(id);
     }
 
 

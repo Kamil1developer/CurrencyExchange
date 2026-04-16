@@ -1,7 +1,9 @@
 package org.kamilkhusainov.currency.dao;
 
 import org.kamilkhusainov.currency.entity.CurrenciesEntity;
+import org.kamilkhusainov.currency.exceptions.AlreadyExistsException;
 import org.kamilkhusainov.currency.exceptions.DataBaseException;
+import org.kamilkhusainov.currency.exceptions.ErrorMessages;
 import org.kamilkhusainov.currency.model.Currency;
 import org.sqlite.SQLiteErrorCode;
 
@@ -92,7 +94,7 @@ public class CurrencyDao {
         }
         catch (SQLException e) {
             if (e.getErrorCode() == SQLiteErrorCode.SQLITE_CONSTRAINT.code){
-                throw new DataBaseException(e.getMessage(),e);
+                throw new AlreadyExistsException(ErrorMessages.DUPLICATE_CURRENCY,e);
             }
             throw new DataBaseException("Ошибка БД",e);
         }
