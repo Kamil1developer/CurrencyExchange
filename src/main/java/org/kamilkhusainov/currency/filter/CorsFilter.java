@@ -11,6 +11,7 @@ import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Map;
 
 @WebFilter("/*")
 public class CorsFilter implements Filter {
@@ -60,6 +61,6 @@ public class CorsFilter implements Filter {
         resp.setStatus(error);
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
-        MAPPER.writeValue(resp.getWriter(), exception.getMessage());
+        MAPPER.writeValue(resp.getWriter(), Map.of("message", exception.getMessage()));
     }
 }
