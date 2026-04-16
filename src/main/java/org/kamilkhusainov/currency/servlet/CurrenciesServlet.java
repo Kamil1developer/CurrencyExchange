@@ -5,6 +5,7 @@ import org.kamilkhusainov.currency.entity.CurrenciesEntity;
 import org.kamilkhusainov.currency.exceptions.AlreadyExistsException;
 import org.kamilkhusainov.currency.exceptions.ErrorMessages;
 import org.kamilkhusainov.currency.exceptions.NotFoundException;
+import org.kamilkhusainov.currency.exceptions.ValidationException;
 import org.kamilkhusainov.currency.infrastructure.AppContainer;
 import org.kamilkhusainov.currency.service.CurrencyService;
 import org.kamilkhusainov.currency.model.Currency;
@@ -38,10 +39,10 @@ public class CurrenciesServlet extends HttpServlet {
                 createCurrency(req,resp);
             }
             else{
-                throw new NotFoundException(ErrorMessages.MAX_SIGN_LENGTH);
+                throw new ValidationException(ErrorMessages.MAX_SIGN_LENGTH);
             }
         } else {
-            throw new NotFoundException(ErrorMessages.MISSING_FIELD);
+            throw new ValidationException(ErrorMessages.MISSING_FIELD);
         }
 
     }
@@ -70,7 +71,7 @@ public class CurrenciesServlet extends HttpServlet {
         try {
             return name.isBlank() || code.isBlank() || sign.isBlank();
         } catch (NullPointerException e) {
-            return true;
+            throw new NullPointerException(ErrorMessages.MISSING_FIELD);
         }
     }
 
