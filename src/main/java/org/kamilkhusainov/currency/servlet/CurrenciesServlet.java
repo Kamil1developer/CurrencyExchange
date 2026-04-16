@@ -27,14 +27,19 @@ public class CurrenciesServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        List<CurrenciesEntity> entityList = currencyService.findAll();
-        ResponseUtil.sendOkJson(resp, entityList);
+        if (!isInvalidRequest(req)) {
+            List<CurrenciesEntity> entityList = currencyService.findAll();
+            ResponseUtil.sendOkJson(resp, entityList);
+        }
+        else {
+            throw new ValidationException(ErrorMessages.MISSING_FIELD);
+        }
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         req.setCharacterEncoding("UTF-8");
-        if (!isInvalidRequest(req, resp)) {
+        if (!isInvalidRequest(req)) {
             if (!isIncorrectValue(req)) {
                 createCurrency(req,resp);
             }
@@ -64,7 +69,7 @@ public class CurrenciesServlet extends HttpServlet {
         String sign = req.getParameter("sign");
         return sign.length() > 3;
     }
-    private boolean isInvalidRequest(HttpServletRequest req,HttpServletResponse resp) throws IOException {
+    private boolean isInvalidRequest(HttpServletRequest req) throws IOException {
         String code = req.getParameter("code");
         String name = req.getParameter("name");
         String sign = req.getParameter("sign");

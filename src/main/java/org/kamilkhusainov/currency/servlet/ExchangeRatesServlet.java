@@ -54,16 +54,14 @@ public class ExchangeRatesServlet extends HttpServlet {
         catch (NumberFormatException | NullPointerException numberFormatException ){
             throw new ValidationException(ErrorMessages.MISSING_FIELD);
         }
-        catch (RuntimeException e){
-            if (ErrorMessages.DUPLICATE_EXCHANGE_RATE.equals(e.getMessage())){
-                throw new AlreadyExistsException(ErrorMessages.DUPLICATE_EXCHANGE_RATE);
-            }
-            if (ErrorMessages.MISSING_FIELD.equals(e.getMessage())){
-                throw new ValidationException(ErrorMessages.MISSING_FIELD);
-            }
-            if (ErrorMessages.CURRENCY_NOT_FOUND.equals(e.getMessage())){
-                throw new NotFoundException(ErrorMessages.CURRENCY_NOT_FOUND);
-            }
+        catch (AlreadyExistsException e) {
+            throw new AlreadyExistsException(ErrorMessages.DUPLICATE_EXCHANGE_RATE);
+        }
+        catch (ValidationException e) {
+            throw new ValidationException(ErrorMessages.DUPLICATE_EXCHANGE_RATE);
+        }
+        catch (NotFoundException e) {
+            throw new NotFoundException(ErrorMessages.DUPLICATE_EXCHANGE_RATE);
         }
     }
 
