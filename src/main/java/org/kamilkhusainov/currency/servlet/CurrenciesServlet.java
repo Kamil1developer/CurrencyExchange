@@ -71,7 +71,7 @@ public class CurrenciesServlet extends HttpServlet {
         try {
             return name.isBlank() || code.isBlank() || sign.isBlank();
         } catch (NullPointerException e) {
-            throw new NullPointerException(ErrorMessages.MISSING_FIELD);
+            throw new ValidationException(ErrorMessages.MISSING_FIELD);
         }
     }
 
