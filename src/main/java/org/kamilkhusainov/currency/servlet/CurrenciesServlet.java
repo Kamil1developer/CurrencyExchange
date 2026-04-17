@@ -27,13 +27,8 @@ public class CurrenciesServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        if (!isInvalidRequest(req)) {
-            List<CurrenciesEntity> entityList = currencyService.findAll();
-            ResponseUtil.sendOkJson(resp, entityList);
-        }
-        else {
-            throw new ValidationException(ErrorMessages.MISSING_FIELD);
-        }
+        List<CurrenciesEntity> entityList = currencyService.findAll();
+        ResponseUtil.sendOkJson(resp, entityList);
     }
 
     @Override
