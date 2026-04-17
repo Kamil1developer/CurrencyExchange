@@ -42,7 +42,7 @@ public class CurrencyDatabaseInitializer {
     }
 
     private String loadSchemaSql() throws IOException{
-        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream("schema.sql")) {
+        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream("db/schema.sql")) {
 
             if (inputStream == null) {
 
