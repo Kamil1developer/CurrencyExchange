@@ -48,7 +48,8 @@ public class ExchangeRateServlet extends HttpServlet {
             sendOkJson(resp, map);
         }
         else {
-            throw new NotFoundException(ErrorMessages.EXCHANGE_RATES_NOT_FOUND);
+            throw new ValidationException(ErrorMessages.MISSING_FIELD);
+
         }
     }
 
