@@ -15,14 +15,28 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class ExchangeRateDao {
+    private static final String FIND_RATE_BY_CURRENCY_IDS_SQL = "SELECT * FROM ExchangeRates WHERE BaseCurrencyId = ? AND TargetCurrencyId = ?";
+    private static final String INSERT_EXCHANGE_RATE_IF_NOT_EXISTS_SQL =
+            "INSERT INTO ExchangeRates(BaseCurrencyId, TargetCurrencyId, Rate) " +
+                    "SELECT ?, ?, ? " +
+                    "WHERE NOT EXISTS (" +
+                    "    SELECT 1 FROM ExchangeRates " +
+                    "    WHERE BaseCurrencyId = ? AND TargetCurrencyId = ?" +
+                    ")";
+    private static final String FIND_EXCHANGE_RATE_ID_BY_CURRENCY_IDS_SQL = "SELECT * FROM ExchangeRates WHERE BaseCurrencyId = ? AND TargetCurrencyId = ?";
+    private static final String FIND_EXCHANGE_RATES_ID_BY_CURRENCY_IDS_SQL = "SELECT * FROM ExchangeRates";
+    private static final String FIND_ALL_BY_BASE_CURRENCY_ID_SQL = "SELECT * FROM ExchangeRates WHERE BaseCurrencyId = ?";
+    private static final String UPDATE_RATE_BY_ID_SQL = "UPDATE ExchangeRates SET Rate = ? WHERE ID = ?";
+
     private final DataSource dataSource;
+
     public ExchangeRateDao(DataSource dataSource){
         this.dataSource = dataSource;
     }
 
     public BigDecimal getRate(long baseCurrencyId, long targetCurrencyId){
         try (Connection connection = dataSource.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM ExchangeRates WHERE BaseCurrencyId = ? AND TargetCurrencyId = ?");
+            PreparedStatement preparedStatement = connection.prepareStatement(FIND_RATE_BY_CURRENCY_IDS_SQL);
             preparedStatement.setLong(1, baseCurrencyId);
             preparedStatement.setLong(2, targetCurrencyId);
             ResultSet resultSet = preparedStatement.executeQuery();
@@ -38,12 +52,7 @@ public class ExchangeRateDao {
 
     public int insert(long baseCurrencyId, long targetCurrencyId, BigDecimal rate){
         try (Connection connection = dataSource.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO ExchangeRates(BaseCurrencyId, TargetCurrencyId, Rate) " +
-                    "SELECT ?, ?, ? " +
-                    "WHERE NOT EXISTS (" +
-                    "   SELECT 1 FROM ExchangeRates " +
-                    "   WHERE BaseCurrencyId = ? AND TargetCurrencyId = ?" +
-                    ")");
+            PreparedStatement preparedStatement = connection.prepareStatement(INSERT_EXCHANGE_RATE_IF_NOT_EXISTS_SQL);
             preparedStatement.setLong(1, baseCurrencyId);
             preparedStatement.setLong(2, targetCurrencyId);
             preparedStatement.setBigDecimal(3, rate);
@@ -66,7 +75,7 @@ public class ExchangeRateDao {
 
     public long findByCodes(long baseCurrencyId,long targetCurrencyId){
         try (Connection connection = dataSource.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM ExchangeRates WHERE BaseCurrencyId = ? AND TargetCurrencyId = ?");
+            PreparedStatement preparedStatement = connection.prepareStatement(FIND_EXCHANGE_RATE_ID_BY_CURRENCY_IDS_SQL);
             preparedStatement.setLong(1, baseCurrencyId);
             preparedStatement.setLong(2, targetCurrencyId);
             ResultSet resultSet = preparedStatement.executeQuery();
@@ -80,7 +89,7 @@ public class ExchangeRateDao {
 
     public List<ExchangeRateEntity> findAll(){
         try (Connection connection = dataSource.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM ExchangeRates");
+            PreparedStatement preparedStatement = connection.prepareStatement(FIND_EXCHANGE_RATES_ID_BY_CURRENCY_IDS_SQL);
             ResultSet resultSet = preparedStatement.executeQuery();
             List<ExchangeRateEntity> entityList = new LinkedList<>();
             while (resultSet.next()){
@@ -97,9 +106,9 @@ public class ExchangeRateDao {
         }
     }
 
-    public List<ExchangeRateEntity> findAllPairs(long baseCurrencyId) {
+    public List<ExchangeRateEntity> findAllByBaseCurrencyID(long baseCurrencyId) {
         try (Connection connection = dataSource.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM ExchangeRates WHERE BaseCurrencyId = ?");
+            PreparedStatement preparedStatement = connection.prepareStatement(FIND_ALL_BY_BASE_CURRENCY_ID_SQL);
             preparedStatement.setLong(1, baseCurrencyId);
             ResultSet resultSet = preparedStatement.executeQuery();
             List<ExchangeRateEntity> entityList = new LinkedList<>();
@@ -118,7 +127,7 @@ public class ExchangeRateDao {
 
     public void update(long id, String rate){
         try (Connection connection = dataSource.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement("UPDATE ExchangeRates SET Rate = ? WHERE ID = ?");
+            PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_RATE_BY_ID_SQL);
             preparedStatement.setBigDecimal(1, new BigDecimal(rate));
             preparedStatement.setLong(2, id);
             preparedStatement.executeUpdate();

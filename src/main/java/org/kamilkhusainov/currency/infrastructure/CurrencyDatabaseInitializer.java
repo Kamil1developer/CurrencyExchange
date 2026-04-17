@@ -2,6 +2,7 @@ package org.kamilkhusainov.currency.infrastructure;
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.util.Properties;
 
@@ -17,41 +18,43 @@ public class CurrencyDatabaseInitializer {
             createTables(connection);
             insertValues(connection);
         }
-        catch (SQLException e) {
+        catch (SQLException | IOException e) {
             throw new RuntimeException(e);
         }
 
     }
-    private void createTables(Connection connection){
-        String createCurrenciesTableSql = """
-                CREATE TABLE IF NOT EXISTS Currencies (
-                    ID INTEGER PRIMARY KEY AUTOINCREMENT,
-                    Code TEXT UNIQUE,
-                    FullName TEXT,
-                    Sign TEXT
-                );
-                """;
-        String createExchangeRatesTableSql = """
-                CREATE TABLE IF NOT EXISTS ExchangeRates (
-                    ID INTEGER PRIMARY KEY AUTOINCREMENT,
-                    BaseCurrencyId INTEGER,
-                    TargetCurrencyId INTEGER,
-                    Rate NUMERIC NOT NULL, UNIQUE(BaseCurrencyId, TargetCurrencyId),
-                    FOREIGN KEY (BaseCurrencyId) REFERENCES Currencies(ID),
-                    FOREIGN KEY (TargetCurrencyId) REFERENCES Currencies(ID)
-                );
-                """;
-        try {
-            PreparedStatement preparedStatement = connection.prepareStatement(createCurrenciesTableSql);
-            preparedStatement.execute();
-            preparedStatement = connection.prepareStatement(createExchangeRatesTableSql);
-            preparedStatement.execute();
-            preparedStatement.close();
-        }
-        catch (SQLException e){
-            throw new RuntimeException(e);
+    private void createTables(Connection connection) throws SQLException, IOException {
+        String schemaSql = loadSchemaSql();
+
+        String[] statements = schemaSql.split(";");
+
+        for (String statement : statements) {
+            String sql = statement.trim();
+
+            if (!sql.isEmpty()) {
+                try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                    preparedStatement.execute();
+                }
+
+            }
+
         }
     }
+
+    private String loadSchemaSql() throws IOException{
+        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream("schema.sql")) {
+
+            if (inputStream == null) {
+
+                throw new IOException("Файл schema.sql не найден в resources");
+
+            }
+
+            return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+
+        }
+    }
+
     private void insertValues(Connection connection) {
         String insertCurrenciesSql = """
                     INSERT OR IGNORE INTO Currencies (Code,FullName,Sign) VALUES (?,?,?)""";
@@ -60,7 +63,7 @@ public class CurrencyDatabaseInitializer {
             PreparedStatement preparedStatement = connection.prepareStatement(insertCurrenciesSql);
             preparedStatement.setString(1,"AUD");
             preparedStatement.setString(2,"Australian dollar");
-            preparedStatement.setString(3,"A$3333");
+            preparedStatement.setString(3,"A33");
             preparedStatement.execute();
 
             preparedStatement.close();

@@ -15,6 +15,18 @@ import java.util.List;
 import java.util.Optional;
 
 public class CurrencyDao {
+    private static final String FIND_ALL_CURRENCIES_SQL =
+            "SELECT ID, Code, FullName, Sign FROM Currencies";
+
+    private static final String FIND_CURRENCY_BY_CODE_SQL =
+            "SELECT ID, Code, FullName, Sign FROM Currencies WHERE Code = ?";
+
+    private static final String FIND_CURRENCY_BY_ID_SQL =
+            "SELECT ID, Code, FullName, Sign FROM Currencies WHERE ID = ?";
+
+    private static final String INSERT_CURRENCY_SQL =
+            "INSERT INTO Currencies(Code, FullName, Sign) VALUES (?, ?, ?)";
+
     private final DataSource dataSource;
 
     public CurrencyDao(DataSource dataSource){
@@ -23,7 +35,7 @@ public class CurrencyDao {
 
     public List<CurrenciesEntity> findAll(){
         try (Connection connection = dataSource.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM Currencies");
+            PreparedStatement preparedStatement = connection.prepareStatement(FIND_ALL_CURRENCIES_SQL);
             ResultSet resultSet = preparedStatement.executeQuery();
             List<CurrenciesEntity> entityList = new ArrayList<>();
             while (resultSet.next()){
@@ -42,7 +54,7 @@ public class CurrencyDao {
 
     public Optional<CurrenciesEntity> findByCode(String code){
         try (Connection connection = dataSource.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement("SELECT ID,Code,FullName,Sign FROM Currencies WHERE Code = ?");
+            PreparedStatement preparedStatement = connection.prepareStatement(FIND_CURRENCY_BY_CODE_SQL);
             preparedStatement.setString(1,code);
             ResultSet resultSet = preparedStatement.executeQuery();
             if (resultSet.getString("Code") != null){
@@ -61,7 +73,7 @@ public class CurrencyDao {
 
     public CurrenciesEntity findById(long id){
         try (Connection connection = dataSource.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement("SELECT ID,Code,FullName,Sign FROM Currencies WHERE ID = ?");
+            PreparedStatement preparedStatement = connection.prepareStatement(FIND_CURRENCY_BY_ID_SQL);
             preparedStatement.setLong(1,id);
             ResultSet resultSet = preparedStatement.executeQuery();
             if (resultSet.next()){
@@ -80,7 +92,7 @@ public class CurrencyDao {
 
     public long insert(Currency currency){
         try (Connection connection = dataSource.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO Currencies(Code,FullName,Sign) VALUES (?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement preparedStatement = connection.prepareStatement(INSERT_CURRENCY_SQL, Statement.RETURN_GENERATED_KEYS);
             preparedStatement.setString(1,currency.code());
             preparedStatement.setString(2,currency.name());
             preparedStatement.setString(3,currency.sign());

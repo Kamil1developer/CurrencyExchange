@@ -66,7 +66,7 @@ public class ExchangeAmountService {
     }
 
     private List<ExchangeRateEntity> findPairForCurrency(CurrenciesEntity baseCurrency,String from, String to) {
-        List<ExchangeRateEntity> exchangeRateEntityList = exchangeRateDao.findAllPairs(baseCurrency.id());
+        List<ExchangeRateEntity> exchangeRateEntityList = exchangeRateDao.findAllByBaseCurrencyID(baseCurrency.id());
         List<ExchangeRateEntity> listPairsFromTo = new ArrayList<>();
         for (ExchangeRateEntity exchangeRateEntity : exchangeRateEntityList) {
             CurrenciesEntity targetCurrency = currencyService.findById(exchangeRateEntity.targetCurrencyId());
