@@ -66,8 +66,6 @@ public class ExchangeRateServlet extends HttpServlet {
             Map<String, Object> map = exchangeRateService.patch(exchangeRateCodes, rate);
             sendOkJson(resp, map);
 
-        } else {
-            throw new ValidationException(ErrorMessages.MISSING_FIELD);
         }
     }
     private String parseRate(HttpServletRequest req) throws IOException {
@@ -78,7 +76,7 @@ public class ExchangeRateServlet extends HttpServlet {
             new BigDecimal(body);
             return body;
         }
-        throw new NotFoundException(ErrorMessages.EXCHANGE_RATES_NOT_FOUND);
+        throw new ValidationException(ErrorMessages.MISSING_FIELD);
     }
     @Override
     public void init(){
