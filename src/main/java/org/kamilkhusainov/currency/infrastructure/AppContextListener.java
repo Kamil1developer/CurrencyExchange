@@ -1,5 +1,7 @@
 package org.kamilkhusainov.currency.infrastructure;
 
+import com.zaxxer.hikari.HikariDataSource;
+
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -20,5 +22,17 @@ public class AppContextListener implements ServletContextListener {
         AppContainer appContainer = new AppContainer(dataSource);
         context.setAttribute("appContainer",appContainer);
         context.setAttribute("dataSource",dataSource);
+    }
+    public void contextDestroyed(ServletContextEvent sce) {
+
+        HikariDataSource dataSource =
+
+                (HikariDataSource) sce.getServletContext().getAttribute("dataSource");
+
+        if (dataSource != null) {
+            dataSource.close();
+
+        }
+
     }
 }
