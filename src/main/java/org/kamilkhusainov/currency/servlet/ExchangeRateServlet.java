@@ -59,16 +59,21 @@ public class ExchangeRateServlet extends HttpServlet {
 
     protected void doPatch(HttpServletRequest req, HttpServletResponse resp)
             throws IOException {
-        req.setCharacterEncoding("UTF-8");
-        String rate = parseRate(req);
-        if (!rate.isEmpty()) {
-            String exchangeRateCodes = req.getPathInfo().substring(1);
-            Map<String, Object> map = exchangeRateService.patch(exchangeRateCodes, rate);
-            sendOkJson(resp, map);
+        try {
+            req.setCharacterEncoding("UTF-8");
+            String rate = parseRate(req);
+            if (!rate.isEmpty()) {
+                String exchangeRateCodes = req.getPathInfo().substring(1);
+                Map<String, Object> map = exchangeRateService.patch(exchangeRateCodes, rate);
+                sendOkJson(resp, map);
 
+            }
+        }
+        catch (NumberFormatException e){
+            throw new ValidationException(ErrorMessages.MISSING_FIELD);
         }
     }
-    private String parseRate(HttpServletRequest req) throws IOException {
+    private String parseRate(HttpServletRequest req) throws IOException,NumberFormatException {
         String body = req.getReader().lines().collect(Collectors.joining());
         int indexOf = body.indexOf("=");
         body = body.substring(indexOf + 1);
