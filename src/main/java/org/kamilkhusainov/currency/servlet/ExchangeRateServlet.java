@@ -32,7 +32,7 @@ public class ExchangeRateServlet extends HttpServlet {
         }
     }
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException, NotFoundException {
         String requestPathInfo = req.getPathInfo();
         try {
         requestPathInfo = requestPathInfo.substring(1);
@@ -43,16 +43,12 @@ public class ExchangeRateServlet extends HttpServlet {
         } catch (NullPointerException e) {
             throw new NotFoundException(ErrorMessages.EXCHANGE_RATES_NOT_FOUND);
         }
-        try {
-            if(!isInvalidRequest(requestPathInfo)) {
-                Map<String, Object> map = exchangeRateService.getExchangeRate(requestPathInfo);
-                sendOkJson(resp, map);
-            }
-            else {
-                throw new NotFoundException(ErrorMessages.EXCHANGE_RATES_NOT_FOUND);
-            }
-        } catch (RuntimeException e) {
-            throw new RuntimeException();
+        if(!isInvalidRequest(requestPathInfo)) {
+            Map<String, Object> map = exchangeRateService.getExchangeRate(requestPathInfo);
+            sendOkJson(resp, map);
+        }
+        else {
+            throw new NotFoundException(ErrorMessages.EXCHANGE_RATES_NOT_FOUND);
         }
     }
 
