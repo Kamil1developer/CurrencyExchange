@@ -41,7 +41,7 @@ public class ExchangeRateServlet extends HttpServlet {
         } catch (StringIndexOutOfBoundsException e) {
             //игнорируем ошибку,ничего страшного
         } catch (NullPointerException e) {
-            throw new NotFoundException(ErrorMessages.EXCHANGE_RATES_NOT_FOUND);
+            throw new ValidationException(ErrorMessages.MISSING_FIELD);
         }
         if(!isInvalidRequest(requestPathInfo)) {
             Map<String, Object> map = exchangeRateService.getExchangeRate(requestPathInfo);
