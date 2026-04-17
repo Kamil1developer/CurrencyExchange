@@ -72,7 +72,7 @@ public class ExchangeRateServlet extends HttpServlet {
             }
         }
         catch (RuntimeException e) {
-            throw new NotFoundException(ErrorMessages.EXCHANGE_RATE_NOT_FOUND);
+            throw new ValidationException(ErrorMessages.MISSING_FIELD);
         }
     }
     private String parseRate(HttpServletRequest req) throws IOException {
