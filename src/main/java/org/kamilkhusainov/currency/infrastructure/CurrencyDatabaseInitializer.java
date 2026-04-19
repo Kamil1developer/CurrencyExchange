@@ -35,9 +35,7 @@ public class CurrencyDatabaseInitializer {
                 try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                     preparedStatement.execute();
                 }
-
             }
-
         }
     }
 
