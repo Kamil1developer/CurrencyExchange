@@ -1,4 +1,8 @@
 package org.kamilkhusainov.currency.dto;
 
-public class ExchangeRateUpdateRequestDto {
+import java.math.BigDecimal;
+
+public record ExchangeRateUpdateRequestDto(
+        BigDecimal rate
+) {
 }

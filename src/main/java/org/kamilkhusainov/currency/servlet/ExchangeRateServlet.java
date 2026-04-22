@@ -1,6 +1,7 @@
 package org.kamilkhusainov.currency.servlet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.kamilkhusainov.currency.dto.ExchangeRateResponseDto;
 import org.kamilkhusainov.currency.exceptions.ErrorMessages;
 import org.kamilkhusainov.currency.exceptions.NotFoundException;
 import org.kamilkhusainov.currency.exceptions.ValidationException;
@@ -44,8 +45,8 @@ public class ExchangeRateServlet extends HttpServlet {
             throw new ValidationException(ErrorMessages.MISSING_FIELD);
         }
         if(!isInvalidRequest(requestPathInfo)) {
-            Map<String, Object> map = exchangeRateService.getExchangeRate(requestPathInfo);
-            sendOkJson(resp, map);
+            ExchangeRateResponseDto exchangeRateResponseDto = exchangeRateService.getExchangeRate(requestPathInfo);
+            sendOkJson(resp, exchangeRateResponseDto);
         }
         else {
             throw new ValidationException(ErrorMessages.MISSING_FIELD);

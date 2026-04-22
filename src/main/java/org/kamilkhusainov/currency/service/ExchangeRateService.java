@@ -2,8 +2,11 @@ package org.kamilkhusainov.currency.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.kamilkhusainov.currency.dao.ExchangeRateDao;
-import org.kamilkhusainov.currency.dto.ExchangeRateDto;
-import org.kamilkhusainov.currency.entity.CurrenciesEntity;
+import org.kamilkhusainov.currency.dto.CurrencyResponseDto;
+import org.kamilkhusainov.currency.dto.ExchangeRateResponseDto;
+import org.kamilkhusainov.currency.dto.ExchangeRequestDto;
+import org.kamilkhusainov.currency.dto.ExchangeAmountResponseDto;
+import org.kamilkhusainov.currency.entity.CurrencyEntity;
 import org.kamilkhusainov.currency.entity.ExchangeRateEntity;
 import org.kamilkhusainov.currency.exceptions.AlreadyExistsException;
 import org.kamilkhusainov.currency.exceptions.ErrorMessages;
@@ -23,18 +26,16 @@ public class ExchangeRateService {
         this.currencyService = currencyService;
     }
 
-    public Map<String, Object> create(ExchangeRateDto exchangeRateDto) throws JsonProcessingException {
+    public ExchangeRateResponseDto create(ExchangeRequestDto exchangeRateDto) throws JsonProcessingException {
             long baseCurrencyId = currencyService.findByCode(exchangeRateDto.baseCurrencyCode()).id();
             long targetCurrencyId = currencyService.findByCode(exchangeRateDto.targetCurrencyCode()).id();
             BigDecimal rate = new BigDecimal(exchangeRateDto.rate());
             int id = exchangeRateDao.insert(baseCurrencyId,targetCurrencyId,rate);
             if (id != 0) {
-                Map<String, Object> linkedHashMap = new LinkedHashMap<>();
-                linkedHashMap.put("id", id);
-                linkedHashMap.put("baseCurrency", currencyService.findById(baseCurrencyId));
-                linkedHashMap.put("targetCurrency", currencyService.findById(targetCurrencyId));
-                linkedHashMap.put("rate", new BigDecimal(exchangeRateDto.rate()));
-                return linkedHashMap;
+                return new ExchangeRateResponseDto(id,
+                        currencyService.findById(baseCurrencyId),
+                        currencyService.findById(targetCurrencyId),
+                        new BigDecimal(exchangeRateDto.rate()));
             }
             else {
                 throw new AlreadyExistsException(ErrorMessages.DUPLICATE_EXCHANGE_RATE);
@@ -42,23 +43,20 @@ public class ExchangeRateService {
     }
 
 
-    public List<Map<String, Object>> findAll(){
-        List<ExchangeRateEntity> exchangeRateEntityList;
-        List<Map<String, Object>> list = new LinkedList<>();
+    public List<ExchangeRateResponseDto> findAll(){
+        List<ExchangeRateResponseDto> exchangeRateResponseDtoList = new LinkedList<>();
         try {
-            exchangeRateEntityList = exchangeRateDao.findAll();
+            List<ExchangeRateEntity> exchangeRateEntityList = exchangeRateDao.findAll();
             for(ExchangeRateEntity exchangeRateEntity:exchangeRateEntityList) {
-                CurrenciesEntity baseCurrency = currencyService.findById(exchangeRateEntity.baseCurrencyId());
-                CurrenciesEntity targetCurrency = currencyService.findById(exchangeRateEntity.targetCurrencyId());
+                CurrencyResponseDto baseCurrency = currencyService.findById(exchangeRateEntity.baseCurrencyId());
+                CurrencyResponseDto targetCurrency = currencyService.findById(exchangeRateEntity.targetCurrencyId());
                 long id = exchangeRateDao.findByCodes(baseCurrency.id(),targetCurrency.id());
-                Map<String,Object> map = Map.of("id",id,"baseCurrency",baseCurrency,"targetCurrency",targetCurrency,"rate",exchangeRateEntity.rate());
-
-                list.add(map);
+                exchangeRateResponseDtoList.add(new ExchangeRateResponseDto(id, baseCurrency, targetCurrency, exchangeRateEntity.rate()));
             }
         } catch (RuntimeException e) {
             throw new RuntimeException(e);
         }
-        return list;
+        return exchangeRateResponseDtoList;
     }
     public long findId(String currencyCodes){
         List<ExchangeRateEntity> exchangeRateEntityList;
@@ -72,10 +70,10 @@ public class ExchangeRateService {
         throw new NotFoundException(ErrorMessages.EXCHANGE_RATE_NOT_FOUND);
     }
     public Map<String,String> findExchangeRateCodes(String currencyCodes){
-        List<ExchangeRateEntity> exchangeRateEntityList = exchangeRateEntityList = exchangeRateDao.findAll();
+        List<ExchangeRateEntity> exchangeRateEntityList =  exchangeRateDao.findAll();
         for(ExchangeRateEntity exchangeRateEntity:exchangeRateEntityList) {
-            CurrenciesEntity baseCurrency = currencyService.findById(exchangeRateEntity.baseCurrencyId());
-            CurrenciesEntity targetCurrency = currencyService.findById(exchangeRateEntity.targetCurrencyId());
+            CurrencyResponseDto baseCurrency = currencyService.findById(exchangeRateEntity.baseCurrencyId());
+            CurrencyResponseDto targetCurrency = currencyService.findById(exchangeRateEntity.targetCurrencyId());
             String code = currencyService.findById(baseCurrency.id()).code() + currencyService.findById(targetCurrency.id()).code();
             if (currencyCodes.equals(code)){
                 return Map.of("baseCurrencyCode",baseCurrency.code(),"targetCurrencyCode", targetCurrency.code());
@@ -87,8 +85,8 @@ public class ExchangeRateService {
         List<ExchangeRateEntity> exchangeRateEntityList;
         exchangeRateEntityList = exchangeRateDao.findAll();
         for(ExchangeRateEntity exchangeRateEntity:exchangeRateEntityList) {
-            CurrenciesEntity baseCurrency = currencyService.findById(exchangeRateEntity.baseCurrencyId());
-            CurrenciesEntity targetCurrency = currencyService.findById(exchangeRateEntity.targetCurrencyId());
+            CurrencyResponseDto baseCurrency = currencyService.findById(exchangeRateEntity.baseCurrencyId());
+            CurrencyResponseDto targetCurrency = currencyService.findById(exchangeRateEntity.targetCurrencyId());
             String code = currencyService.findById(baseCurrency.id()).code() + currencyService.findById(targetCurrency.id()).code();
             if (currencyCodes.equals(code)){
                 return exchangeRateEntity.rate();
@@ -96,16 +94,13 @@ public class ExchangeRateService {
         }
         throw new NotFoundException(ErrorMessages.RATE_NOT_FOUND);
     }
-    public Map<String, Object> getExchangeRate(String exchangeRateCodes){
+    public ExchangeRateResponseDto getExchangeRate(String exchangeRateCodes){
         long id = findId(exchangeRateCodes);
         Map<String,String> exchangeRateCodesMap = findExchangeRateCodes(exchangeRateCodes);
-        Map<String, Object> linkedHashMap = new LinkedHashMap<>();
         BigDecimal rate = findRate(exchangeRateCodes);
-        linkedHashMap.put("id", id);
-        linkedHashMap.put("baseCurrency", currencyService.findByCode(exchangeRateCodesMap.get("baseCurrencyCode")));
-        linkedHashMap.put("targetCurrency", currencyService.findByCode(exchangeRateCodesMap.get("targetCurrencyCode")));
-        linkedHashMap.put("rate", rate);
-        return linkedHashMap;
+        CurrencyResponseDto baseCurrency = currencyService.findByCode(exchangeRateCodesMap.get("baseCurrencyCode"));
+        CurrencyResponseDto targetCurrency = currencyService.findByCode(exchangeRateCodesMap.get("targetCurrencyCode"));
+        return new ExchangeRateResponseDto(id, baseCurrency, targetCurrency, rate);
 
     }
     public Map<String, Object> patch(String exchangeRateCodes,String rate){
@@ -122,7 +117,6 @@ public class ExchangeRateService {
         }
         throw new NumberFormatException();
     }
-
 
     public boolean isValidRate(String rate) throws NumberFormatException {
         try {

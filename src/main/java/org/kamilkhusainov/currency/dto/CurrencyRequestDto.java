@@ -1,4 +1,8 @@
 package org.kamilkhusainov.currency.dto;
 
-public class CurrencyRequestDto {
+public record CurrencyRequestDto(
+        String code,
+        String name,
+        String sign
+) {
 }

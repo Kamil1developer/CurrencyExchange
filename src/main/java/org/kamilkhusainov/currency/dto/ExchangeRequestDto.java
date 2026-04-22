@@ -1,4 +1,4 @@
 package org.kamilkhusainov.currency.dto;
 
-public class ExchangeRequestDto {
+public record ExchangeRequestDto(String baseCurrencyCode, String targetCurrencyCode, String rate) {
 }

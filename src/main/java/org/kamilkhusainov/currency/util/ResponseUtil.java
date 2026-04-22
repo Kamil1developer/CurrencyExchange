@@ -14,5 +14,6 @@ public class ResponseUtil {
         resp.setCharacterEncoding("UTF-8");
         MAPPER.writeValue(resp.getWriter(), object);
     }
+    private ResponseUtil(){}
 
 }

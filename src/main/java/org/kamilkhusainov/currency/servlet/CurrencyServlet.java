@@ -1,6 +1,7 @@
 package org.kamilkhusainov.currency.servlet;
 
-import org.kamilkhusainov.currency.entity.CurrenciesEntity;
+import org.kamilkhusainov.currency.dto.CurrencyResponseDto;
+import org.kamilkhusainov.currency.entity.CurrencyEntity;
 import org.kamilkhusainov.currency.exceptions.ErrorMessages;
 import org.kamilkhusainov.currency.exceptions.NotFoundException;
 import org.kamilkhusainov.currency.exceptions.ValidationException;
@@ -30,9 +31,9 @@ public class CurrencyServlet extends HttpServlet {
         }
         try {
             if (!isInvalidRequest(requestPathInfo,resp)) {
-                CurrenciesEntity entity = currencyService.findByCode(requestPathInfo);
+                CurrencyResponseDto currencyResponseDto = currencyService.findByCode(requestPathInfo);
 
-                sendOkJson(resp, entity);
+                sendOkJson(resp, currencyResponseDto);
             }
         }
         catch (NotFoundException e){

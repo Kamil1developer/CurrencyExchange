@@ -1,4 +1,9 @@
 package org.kamilkhusainov.currency.dto;
 
-public class CurrencyResponseDto {
+public record CurrencyResponseDto(
+        long id,
+        String code,
+        String name,
+        String sign
+) {
 }

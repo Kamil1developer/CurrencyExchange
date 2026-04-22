@@ -1,14 +1,14 @@
 package org.kamilkhusainov.currency.servlet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.kamilkhusainov.currency.entity.CurrenciesEntity;
+import org.kamilkhusainov.currency.dto.CurrencyResponseDto;
+import org.kamilkhusainov.currency.entity.CurrencyEntity;
 import org.kamilkhusainov.currency.exceptions.AlreadyExistsException;
 import org.kamilkhusainov.currency.exceptions.ErrorMessages;
-import org.kamilkhusainov.currency.exceptions.NotFoundException;
 import org.kamilkhusainov.currency.exceptions.ValidationException;
 import org.kamilkhusainov.currency.infrastructure.AppContainer;
 import org.kamilkhusainov.currency.service.CurrencyService;
-import org.kamilkhusainov.currency.model.Currency;
+import org.kamilkhusainov.currency.dto.CurrencyRequestDto;
 import org.kamilkhusainov.currency.util.ResponseUtil;
 
 import javax.servlet.annotation.WebServlet;
@@ -27,7 +27,7 @@ public class CurrenciesServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        List<CurrenciesEntity> entityList = currencyService.findAll();
+        List<CurrencyEntity> entityList = currencyService.findAll();
         ResponseUtil.sendOkJson(resp, entityList);
     }
 
@@ -48,13 +48,13 @@ public class CurrenciesServlet extends HttpServlet {
     }
 
     private void createCurrency(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        Currency currency = new Currency(req.getParameter("name"), req.getParameter("code"), req.getParameter("sign"));
+        CurrencyRequestDto currency = new CurrencyRequestDto(req.getParameter("name"), req.getParameter("code"), req.getParameter("sign"));
         try {
-            CurrenciesEntity currencyEntity = currencyService.create(currency);
+            CurrencyResponseDto currencyResponseDto = currencyService.create(currency);
             resp.setStatus(201);
             resp.setContentType("application/json");
             resp.setCharacterEncoding("UTF-8");
-            resp.getWriter().write(MAPPER.writeValueAsString(currencyEntity));
+            resp.getWriter().write(MAPPER.writeValueAsString(currencyResponseDto));
         } catch (AlreadyExistsException alreadyExistsException) {
             throw new AlreadyExistsException(ErrorMessages.DUPLICATE_CURRENCY);
         }

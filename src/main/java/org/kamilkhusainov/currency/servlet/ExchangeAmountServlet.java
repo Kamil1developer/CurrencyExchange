@@ -1,7 +1,7 @@
 package org.kamilkhusainov.currency.servlet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.kamilkhusainov.currency.dto.ExchangeRateAmountDto;
+import org.kamilkhusainov.currency.dto.ExchangeAmountResponseDto;
 import org.kamilkhusainov.currency.exceptions.ErrorMessages;
 import org.kamilkhusainov.currency.exceptions.NotFoundException;
 import org.kamilkhusainov.currency.exceptions.ValidationException;
@@ -29,7 +29,7 @@ public class ExchangeAmountServlet extends HttpServlet {
             String from = req.getParameter("from");
             String to = req.getParameter("to");
             BigDecimal amount = new BigDecimal(req.getParameter("amount"));
-            Optional<ExchangeRateAmountDto> body = exchangeAmountService.existsExchangeRate(from,to,amount);
+            Optional<ExchangeAmountResponseDto> body = exchangeAmountService.existsExchangeRate(from,to,amount);
             if (body.isPresent()) {
                 sendOkJson(resp,body.get());
             }

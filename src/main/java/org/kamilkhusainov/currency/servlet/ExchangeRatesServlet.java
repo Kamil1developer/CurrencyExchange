@@ -1,6 +1,8 @@
 package org.kamilkhusainov.currency.servlet;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.kamilkhusainov.currency.dto.ExchangeRateDto;
+import org.kamilkhusainov.currency.dto.ExchangeRateResponseDto;
+import org.kamilkhusainov.currency.dto.ExchangeRequestDto;
+import org.kamilkhusainov.currency.dto.ExchangeAmountResponseDto;
 import org.kamilkhusainov.currency.exceptions.*;
 import org.kamilkhusainov.currency.infrastructure.AppContainer;
 import org.kamilkhusainov.currency.service.ExchangeRateService;
@@ -24,7 +26,7 @@ public class ExchangeRatesServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
-            List<Map<String, Object>> list = exchangeRateService.findAll();
+            List<ExchangeRateResponseDto> list = exchangeRateService.findAll();
             ResponseUtil.sendOkJson(resp,list);
         }
         catch (RuntimeException e) {
@@ -39,9 +41,9 @@ public class ExchangeRatesServlet extends HttpServlet {
                 String baseCurrencyCode = req.getParameter("baseCurrencyCode");
                 String targetCurrencyCode = req.getParameter("targetCurrencyCode");
                 String rate = req.getParameter("rate");
-                ExchangeRateDto exchangeRateDto = new ExchangeRateDto(baseCurrencyCode, targetCurrencyCode, rate);
-                Map<String, Object> map = exchangeRateService.create(exchangeRateDto);
-                String json = MAPPER.writeValueAsString(map);
+                ExchangeRequestDto exchangeRateDto = new ExchangeRequestDto(baseCurrencyCode, targetCurrencyCode, rate);
+                ExchangeRateResponseDto exchangeAmountResponseDto = exchangeRateService.create(exchangeRateDto);
+                String json = MAPPER.writeValueAsString(exchangeAmountResponseDto);
 
                 resp.setContentType("application/json");
                 resp.setCharacterEncoding("UTF-8");

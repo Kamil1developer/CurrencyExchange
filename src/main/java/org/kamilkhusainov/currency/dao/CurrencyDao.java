@@ -1,10 +1,10 @@
 package org.kamilkhusainov.currency.dao;
 
-import org.kamilkhusainov.currency.entity.CurrenciesEntity;
+import org.kamilkhusainov.currency.entity.CurrencyEntity;
 import org.kamilkhusainov.currency.exceptions.AlreadyExistsException;
 import org.kamilkhusainov.currency.exceptions.DataBaseException;
 import org.kamilkhusainov.currency.exceptions.ErrorMessages;
-import org.kamilkhusainov.currency.model.Currency;
+import org.kamilkhusainov.currency.dto.CurrencyRequestDto;
 import org.sqlite.SQLiteErrorCode;
 
 import javax.sql.DataSource;
@@ -33,13 +33,13 @@ public class CurrencyDao {
         this.dataSource = dataSource;
     }
 
-    public List<CurrenciesEntity> findAll(){
+    public List<CurrencyEntity> findAll(){
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement(FIND_ALL_CURRENCIES_SQL);
             ResultSet resultSet = preparedStatement.executeQuery();
-            List<CurrenciesEntity> entityList = new ArrayList<>();
+            List<CurrencyEntity> entityList = new ArrayList<>();
             while (resultSet.next()){
-                CurrenciesEntity entity = new CurrenciesEntity(resultSet.getLong("ID"),
+                CurrencyEntity entity = new CurrencyEntity(resultSet.getLong("ID"),
                         resultSet.getString("Code"),
                         resultSet.getString("FullName"),resultSet.getString("Sign"));
                 entityList.add(entity);
@@ -52,13 +52,13 @@ public class CurrencyDao {
         }
     }
 
-    public Optional<CurrenciesEntity> findByCode(String code){
+    public Optional<CurrencyEntity> findByCode(String code){
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement(FIND_CURRENCY_BY_CODE_SQL);
             preparedStatement.setString(1,code);
             ResultSet resultSet = preparedStatement.executeQuery();
             if (resultSet.getString("Code") != null){
-                CurrenciesEntity entity = new CurrenciesEntity(resultSet.getLong("ID"),
+                CurrencyEntity entity = new CurrencyEntity(resultSet.getLong("ID"),
                         resultSet.getString("Code"),
                         resultSet.getString("FullName"), resultSet.getString("Sign"));
                 resultSet.close();
@@ -71,26 +71,26 @@ public class CurrencyDao {
         }
     }
 
-    public CurrenciesEntity findById(long id){
+    public Optional<CurrencyEntity> findById(long id){
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement(FIND_CURRENCY_BY_ID_SQL);
             preparedStatement.setLong(1,id);
             ResultSet resultSet = preparedStatement.executeQuery();
             if (resultSet.next()){
-            CurrenciesEntity entity = new CurrenciesEntity(resultSet.getLong("ID"),
+            CurrencyEntity entity = new CurrencyEntity(resultSet.getLong("ID"),
                     resultSet.getString("Code"),
                     resultSet.getString("FullName"), resultSet.getString("Sign"));
             resultSet.close();
-            return entity;
+            return Optional.of(entity);
             }
         }
         catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DataBaseException(ErrorMessages.DATABASE_ERROR, e);
         }
-        return new CurrenciesEntity(-1,"nullNull","nullNull","nullNull");
+        return Optional.empty();
     }
 
-    public long insert(Currency currency){
+    public long insert(CurrencyRequestDto currency){
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement(INSERT_CURRENCY_SQL, Statement.RETURN_GENERATED_KEYS);
             preparedStatement.setString(1,currency.code());
@@ -108,7 +108,7 @@ public class CurrencyDao {
             if (e.getErrorCode() == SQLiteErrorCode.SQLITE_CONSTRAINT.code){
                 throw new AlreadyExistsException(ErrorMessages.DUPLICATE_CURRENCY,e);
             }
-            throw new DataBaseException("Ошибка БД",e);
+            throw new DataBaseException(ErrorMessages.DATABASE_ERROR,e);
         }
     }
 }

@@ -2,10 +2,11 @@ package org.kamilkhusainov.currency.dto;
 
 import java.math.BigDecimal;
 
-public record ExchangeRateResponseDto(
-        long id,
+public record ExchangeAmountResponseDto(
         CurrencyResponseDto baseCurrency,
         CurrencyResponseDto targetCurrency,
-        BigDecimal rate
+        BigDecimal rate,
+        BigDecimal amount,
+        BigDecimal convertedAmount
 ) {
 }
