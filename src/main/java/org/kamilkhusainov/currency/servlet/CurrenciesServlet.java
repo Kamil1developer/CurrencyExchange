@@ -48,7 +48,7 @@ public class CurrenciesServlet extends HttpServlet {
     }
 
     private void createCurrency(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        CurrencyRequestDto currency = new CurrencyRequestDto(req.getParameter("name"), req.getParameter("code"), req.getParameter("sign"));
+        CurrencyRequestDto currency = new CurrencyRequestDto(req.getParameter("code"), req.getParameter("name"), req.getParameter("sign"));
         try {
             CurrencyResponseDto currencyResponseDto = currencyService.create(currency);
             resp.setStatus(201);
