@@ -1,6 +1,7 @@
 package org.kamilkhusainov.currency.dao;
 
 import org.kamilkhusainov.currency.entity.CurrencyEntity;
+import org.kamilkhusainov.currency.entity.ExchangeRateRow;
 import org.kamilkhusainov.currency.exceptions.AlreadyExistsException;
 import org.kamilkhusainov.currency.exceptions.DataBaseException;
 import org.kamilkhusainov.currency.exceptions.ErrorMessages;
@@ -111,4 +112,5 @@ public class CurrencyDao {
             throw new DataBaseException(ErrorMessages.DATABASE_ERROR,e);
         }
     }
+
 }

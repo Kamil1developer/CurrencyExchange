@@ -4,5 +4,10 @@ import org.kamilkhusainov.currency.entity.CurrencyEntity;
 
 import java.math.BigDecimal;
 
-public record ExchangeRateUpdateResponseDto(CurrencyResponseDto baseCurrency, CurrencyResponseDto targetCurrency, BigDecimal rate, BigDecimal amount, BigDecimal convertedAmount) {
+public record ExchangeRateUpdateResponseDto(
+        long id,
+        CurrencyResponseDto baseCurrency,
+        CurrencyResponseDto targetCurrency,
+        BigDecimal rate
+) {
 }

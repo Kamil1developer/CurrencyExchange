@@ -6,6 +6,7 @@ import org.kamilkhusainov.currency.dto.CurrencyResponseDto;
 import org.kamilkhusainov.currency.dto.ExchangeAmountResponseDto;
 import org.kamilkhusainov.currency.entity.CurrencyEntity;
 import org.kamilkhusainov.currency.entity.ExchangeRateEntity;
+import org.kamilkhusainov.currency.entity.ExchangeRateRow;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -55,9 +56,9 @@ public class ExchangeAmountService {
     }
 
     public Optional<List<ExchangeRateEntity>> findCrossExchangeRate(String from, String to){
-        List<ExchangeRateEntity> exchangeRateEntityList = exchangeRateDao.findAll();
-        for (ExchangeRateEntity exchangeRateEntity: exchangeRateEntityList){
-            CurrencyResponseDto baseCurrency = currencyService.findById(exchangeRateEntity.baseCurrencyId());
+        List<ExchangeRateRow> exchangeRateRowList = exchangeRateDao.findAll();
+        for (ExchangeRateRow exchangeRateRow: exchangeRateRowList){
+            CurrencyResponseDto baseCurrency = currencyService.findById(exchangeRateRow.baseCurrencyId());
             List<ExchangeRateEntity> listPairsFromTo = findPairForCurrency(baseCurrency,from,to);
             if (listPairsFromTo.size() == CurrencyConstants.CROSS_PAIR_COMPONENTS){
                 return Optional.of(listPairsFromTo);

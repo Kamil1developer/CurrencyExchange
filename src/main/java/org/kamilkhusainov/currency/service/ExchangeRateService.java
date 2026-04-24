@@ -2,12 +2,10 @@ package org.kamilkhusainov.currency.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.kamilkhusainov.currency.dao.ExchangeRateDao;
-import org.kamilkhusainov.currency.dto.CurrencyResponseDto;
-import org.kamilkhusainov.currency.dto.ExchangeRateResponseDto;
-import org.kamilkhusainov.currency.dto.ExchangeRequestDto;
-import org.kamilkhusainov.currency.dto.ExchangeAmountResponseDto;
+import org.kamilkhusainov.currency.dto.*;
 import org.kamilkhusainov.currency.entity.CurrencyEntity;
 import org.kamilkhusainov.currency.entity.ExchangeRateEntity;
+import org.kamilkhusainov.currency.entity.ExchangeRateRow;
 import org.kamilkhusainov.currency.exceptions.AlreadyExistsException;
 import org.kamilkhusainov.currency.exceptions.ErrorMessages;
 import org.kamilkhusainov.currency.exceptions.NotFoundException;
@@ -46,56 +44,61 @@ public class ExchangeRateService {
     public List<ExchangeRateResponseDto> findAll(){
         List<ExchangeRateResponseDto> exchangeRateResponseDtoList = new LinkedList<>();
         try {
-            List<ExchangeRateEntity> exchangeRateEntityList = exchangeRateDao.findAll();
-            for(ExchangeRateEntity exchangeRateEntity:exchangeRateEntityList) {
-                CurrencyResponseDto baseCurrency = currencyService.findById(exchangeRateEntity.baseCurrencyId());
-                CurrencyResponseDto targetCurrency = currencyService.findById(exchangeRateEntity.targetCurrencyId());
-                long id = exchangeRateDao.findByCodes(baseCurrency.id(),targetCurrency.id());
-                exchangeRateResponseDtoList.add(new ExchangeRateResponseDto(id, baseCurrency, targetCurrency, exchangeRateEntity.rate()));
+            List<ExchangeRateRow> exchangeRateRowList = exchangeRateDao.findAll();
+            for(ExchangeRateRow exchangeRateRow: exchangeRateRowList) {
+                CurrencyResponseDto baseCurrency = new CurrencyResponseDto(
+                        exchangeRateRow.baseCurrencyId(),
+                        exchangeRateRow.baseCurrencyCode(),
+                        exchangeRateRow.baseCurrencyName(),
+                        exchangeRateRow.baseCurrencySign()
+
+                );
+
+                CurrencyResponseDto targetCurrency = new CurrencyResponseDto(
+                        exchangeRateRow.targetCurrencyId(),
+                        exchangeRateRow.targetCurrencyCode(),
+                        exchangeRateRow.targetCurrencyName(),
+                        exchangeRateRow.targetCurrencySign()
+
+                );
+                exchangeRateResponseDtoList.add(new ExchangeRateResponseDto(exchangeRateRow.exchangeRateId(), baseCurrency, targetCurrency, exchangeRateRow.rate()));
             }
         } catch (RuntimeException e) {
             throw new RuntimeException(e);
         }
         return exchangeRateResponseDtoList;
     }
-    public long findId(String currencyCodes){
-        List<ExchangeRateEntity> exchangeRateEntityList;
-        exchangeRateEntityList = exchangeRateDao.findAll();
-        for(ExchangeRateEntity exchangeRateEntity:exchangeRateEntityList) {
-            String code = currencyService.findById(exchangeRateEntity.baseCurrencyId()).code() + currencyService.findById(exchangeRateEntity.targetCurrencyId()).code();
-            if (currencyCodes.equals(code)){
-                return exchangeRateEntity.id();
-            }
-        }
-        throw new NotFoundException(ErrorMessages.EXCHANGE_RATE_NOT_FOUND);
+    public ExchangeRateRow findId(String baseCurrencyCode, String targetCurrencyCode){
+        return exchangeRateDao.findByCodesWithCurrencies(baseCurrencyCode, targetCurrencyCode);
     }
     public Map<String,String> findExchangeRateCodes(String currencyCodes){
-        List<ExchangeRateEntity> exchangeRateEntityList =  exchangeRateDao.findAll();
-        for(ExchangeRateEntity exchangeRateEntity:exchangeRateEntityList) {
-            CurrencyResponseDto baseCurrency = currencyService.findById(exchangeRateEntity.baseCurrencyId());
-            CurrencyResponseDto targetCurrency = currencyService.findById(exchangeRateEntity.targetCurrencyId());
-            String code = currencyService.findById(baseCurrency.id()).code() + currencyService.findById(targetCurrency.id()).code();
+        List<ExchangeRateRow> exchangeRateRowList =  exchangeRateDao.findAll();
+        for(ExchangeRateRow exchangeRateRow:exchangeRateRowList) {
+            String baseCurrency = exchangeRateRow.baseCurrencyCode();
+            String targetCurrency = exchangeRateRow.targetCurrencyCode();
+            String code = baseCurrency + targetCurrency;
             if (currencyCodes.equals(code)){
-                return Map.of("baseCurrencyCode",baseCurrency.code(),"targetCurrencyCode", targetCurrency.code());
+                return Map.of("baseCurrencyCode",baseCurrency,"targetCurrencyCode", targetCurrency);
             }
         }
         return Map.of();
     }
     public BigDecimal findRate(String currencyCodes){
-        List<ExchangeRateEntity> exchangeRateEntityList;
-        exchangeRateEntityList = exchangeRateDao.findAll();
-        for(ExchangeRateEntity exchangeRateEntity:exchangeRateEntityList) {
-            CurrencyResponseDto baseCurrency = currencyService.findById(exchangeRateEntity.baseCurrencyId());
-            CurrencyResponseDto targetCurrency = currencyService.findById(exchangeRateEntity.targetCurrencyId());
-            String code = currencyService.findById(baseCurrency.id()).code() + currencyService.findById(targetCurrency.id()).code();
+        List<ExchangeRateRow> exchangeRateRowList = exchangeRateDao.findAll();
+        for(ExchangeRateRow exchangeRateRow: exchangeRateRowList) {
+            String baseCurrency = exchangeRateRow.baseCurrencyCode();
+            String targetCurrency = exchangeRateRow.targetCurrencyCode();
+            String code = baseCurrency + targetCurrency;
             if (currencyCodes.equals(code)){
-                return exchangeRateEntity.rate();
+                return exchangeRateRow.rate();
             }
         }
         throw new NotFoundException(ErrorMessages.RATE_NOT_FOUND);
     }
     public ExchangeRateResponseDto getExchangeRate(String exchangeRateCodes){
-        long id = findId(exchangeRateCodes);
+        String baseCurrencyCode = exchangeRateCodes.substring(0,3);
+        String targetCurrencyCode = exchangeRateCodes.substring(3,6);
+        long id = findId(baseCurrencyCode, targetCurrencyCode).exchangeRateId();
         Map<String,String> exchangeRateCodesMap = findExchangeRateCodes(exchangeRateCodes);
         BigDecimal rate = findRate(exchangeRateCodes);
         CurrencyResponseDto baseCurrency = currencyService.findByCode(exchangeRateCodesMap.get("baseCurrencyCode"));
@@ -103,29 +106,26 @@ public class ExchangeRateService {
         return new ExchangeRateResponseDto(id, baseCurrency, targetCurrency, rate);
 
     }
-    public Map<String, Object> patch(String exchangeRateCodes,String rate){
-        if (isValidRate(rate)) {
-            long id = findId(exchangeRateCodes);
-            exchangeRateDao.update(id,rate);
-            Map<String,String> exchangeRateCodesMap = findExchangeRateCodes(exchangeRateCodes);
-            Map<String, Object> linkedHashMap = new LinkedHashMap<>();
-            linkedHashMap.put("id", id);
-            linkedHashMap.put("baseCurrency", currencyService.findByCode(exchangeRateCodesMap.get("baseCurrencyCode")));
-            linkedHashMap.put("targetCurrency", currencyService.findByCode(exchangeRateCodesMap.get("targetCurrencyCode")));
-            linkedHashMap.put("rate", new BigDecimal(rate));
-            return linkedHashMap;
-        }
-        throw new NumberFormatException();
-    }
+    public ExchangeRateUpdateResponseDto patch(String exchangeRateCodes, ExchangeRateUpdateRequestDto requestDto){
+        String baseCurrencyCode = exchangeRateCodes.substring(0, 3);
+        String targetCurrencyCode = exchangeRateCodes.substring(3, 6);
 
-    public boolean isValidRate(String rate) throws NumberFormatException {
-        try {
-            new BigDecimal(rate);
-        } catch (NumberFormatException numberFormatException) {
-            throw new ValidationException("Поле rate неправильное ",numberFormatException);
-        }
-        return true;
-    }
+        ExchangeRateRow exchangeRateRow = findId(baseCurrencyCode, targetCurrencyCode);
+        long id = exchangeRateRow.exchangeRateId();
+        exchangeRateDao.update(id, requestDto.rate());
 
+        CurrencyResponseDto baseCurrency = new CurrencyResponseDto(
+                exchangeRateRow.baseCurrencyId(),
+                exchangeRateRow.baseCurrencyCode(),
+                exchangeRateRow.baseCurrencyName(),
+                exchangeRateRow.baseCurrencySign());
+
+        CurrencyResponseDto targetCurrency = new CurrencyResponseDto(
+                exchangeRateRow.targetCurrencyId(),
+                exchangeRateRow.targetCurrencyCode(),
+                exchangeRateRow.targetCurrencyName(),
+                exchangeRateRow.targetCurrencySign());
+        return new ExchangeRateUpdateResponseDto(id,baseCurrency,targetCurrency,exchangeRateRow.rate());
+    }
 
 }

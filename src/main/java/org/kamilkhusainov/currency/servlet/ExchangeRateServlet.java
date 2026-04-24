@@ -2,11 +2,15 @@ package org.kamilkhusainov.currency.servlet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.kamilkhusainov.currency.dto.ExchangeRateResponseDto;
+import org.kamilkhusainov.currency.dto.ExchangeRateUpdateRequestDto;
+import org.kamilkhusainov.currency.dto.ExchangeRateUpdateResponseDto;
 import org.kamilkhusainov.currency.exceptions.ErrorMessages;
 import org.kamilkhusainov.currency.exceptions.NotFoundException;
 import org.kamilkhusainov.currency.exceptions.ValidationException;
 import org.kamilkhusainov.currency.infrastructure.AppContainer;
 import org.kamilkhusainov.currency.service.ExchangeRateService;
+import org.kamilkhusainov.currency.validation.ExchangeRateValidator;
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -63,10 +67,11 @@ public class ExchangeRateServlet extends HttpServlet {
         try {
             req.setCharacterEncoding("UTF-8");
             String rate = parseRate(req);
-            if (!rate.isEmpty()) {
+            if (!rate.isEmpty() && ExchangeRateValidator.isValidRate(rate)) {
                 String exchangeRateCodes = req.getPathInfo().substring(1);
-                Map<String, Object> map = exchangeRateService.patch(exchangeRateCodes, rate);
-                sendOkJson(resp, map);
+                ExchangeRateUpdateRequestDto requestDto = new ExchangeRateUpdateRequestDto(new BigDecimal(rate));
+                ExchangeRateUpdateResponseDto responseDto = exchangeRateService.patch(exchangeRateCodes, requestDto);
+                sendOkJson(resp, responseDto);
 
             }
         }
