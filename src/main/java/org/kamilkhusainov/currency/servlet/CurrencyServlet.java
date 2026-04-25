@@ -31,7 +31,7 @@ public class CurrencyServlet extends HttpServlet {
         }
         try {
             if (!isInvalidRequest(requestPathInfo,resp)) {
-                CurrencyResponseDto currencyResponseDto = currencyService.findByCode(requestPathInfo);
+                CurrencyResponseDto currencyResponseDto = currencyService.find(requestPathInfo);
 
                 sendOkJson(resp, currencyResponseDto);
             }
