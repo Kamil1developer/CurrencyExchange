@@ -21,7 +21,7 @@ public class CurrencyService {
     public List<CurrencyEntity> findAll(){
         return currencyDao.findAll();
     }
-    public CurrencyResponseDto findByCode(String code){
+    public CurrencyResponseDto find(String code){
         Optional<CurrencyEntity> optionalCurrencyEntity = currencyDao.findByCode(code);
         if (optionalCurrencyEntity.isPresent()){
             CurrencyEntity currencyEntity = optionalCurrencyEntity.get();
@@ -32,19 +32,8 @@ public class CurrencyService {
         }
 
     }
-    public CurrencyResponseDto findById(long id){
-        Optional<CurrencyEntity> optionalCurrencyEntity = currencyDao.findById(id);
-        if (optionalCurrencyEntity.isPresent()){
-            CurrencyEntity currencyEntity = optionalCurrencyEntity.get();
-            return new CurrencyResponseDto(currencyEntity.id(),
-                    currencyEntity.code(),
-                    currencyEntity.name(),
-                    currencyEntity.sign());
-        }
-        throw new NotFoundException(ErrorMessages.CURRENCY_NOT_FOUND);
-    }
     public CurrencyResponseDto create(CurrencyRequestDto currencyRequestDto){
-        long id = currencyDao.insert(currencyRequestDto);
-        return findById(id);
+        currencyDao.insert(currencyRequestDto);
+        return find(currencyRequestDto.code());
     }
 }

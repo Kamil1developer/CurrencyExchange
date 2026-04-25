@@ -102,8 +102,7 @@ public class CurrencyDao {
             if (rs.next()) {
                 return rs.getLong(1);
             }
-            throw new DataBaseException("Не удалось получить сгенерированный ID");
-
+            throw new AlreadyExistsException(ErrorMessages.DUPLICATE_EXCHANGE_RATE);
         }
         catch (SQLException e) {
             if (e.getErrorCode() == SQLiteErrorCode.SQLITE_CONSTRAINT.code){

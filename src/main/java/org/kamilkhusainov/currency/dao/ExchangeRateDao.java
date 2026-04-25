@@ -26,9 +26,22 @@ public class ExchangeRateDao {
                     "    SELECT 1 FROM ExchangeRates " +
                     "    WHERE BaseCurrencyId = ? AND TargetCurrencyId = ?" +
                     ")";
-    private static final String FIND_EXCHANGE_RATE_ID_BY_CURRENCY_IDS_SQL = "SELECT * FROM ExchangeRates WHERE BaseCurrencyId = ? AND TargetCurrencyId = ?";
-    private static final String FIND_EXCHANGE_RATES_ID_BY_CURRENCY_IDS_SQL = "SELECT * FROM ExchangeRates";
-    private static final String FIND_ALL_BY_BASE_CURRENCY_ID_SQL = "SELECT * FROM ExchangeRates WHERE BaseCurrencyId = ?";
+    private static final String FIND_ALL_BY_BASE_CURRENCY_ID_WITH_CURRENCIES_SQL =
+            "SELECT " +
+                "er.ID AS ExchangeRateId, " +
+                "bc.ID AS BaseCurrencyId, " +
+                "bc.Code AS BaseCurrencyCode, " +
+                "bc.FullName AS BaseCurrencyName, " +
+                "bc.Sign AS BaseCurrencySign, " +
+                "tc.ID AS TargetCurrencyId, " +
+                "tc.Code AS TargetCurrencyCode, " +
+                "tc.FullName AS TargetCurrencyName, " +
+                "tc.Sign AS TargetCurrencySign, " +
+                "er.Rate AS Rate " +
+                "FROM ExchangeRates er " +
+                "JOIN Currencies bc ON er.BaseCurrencyId = bc.ID " +
+                "JOIN Currencies tc ON er.TargetCurrencyId = tc.ID " +
+                "WHERE er.BaseCurrencyId = ?";
     private static final String UPDATE_RATE_BY_ID_SQL = "UPDATE ExchangeRates SET Rate = ? WHERE ID = ?";
     private static final String FIND_ALL_WITH_CURRENCIES_SQL =
             "SELECT " +
@@ -133,26 +146,40 @@ public class ExchangeRateDao {
         }
     }
 
-    public List<ExchangeRateEntity> findAllByBaseCurrencyID(long baseCurrencyId) {
-        try (Connection connection = dataSource.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement(FIND_ALL_BY_BASE_CURRENCY_ID_SQL);
+    public List<ExchangeRateRow> findAllByBaseCurrencyID(long baseCurrencyId) {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(FIND_ALL_BY_BASE_CURRENCY_ID_WITH_CURRENCIES_SQL)) {
+
             preparedStatement.setLong(1, baseCurrencyId);
-            ResultSet resultSet = preparedStatement.executeQuery();
-            List<ExchangeRateEntity> entityList = new LinkedList<>();
-            while (resultSet.next()) {
-                ExchangeRateEntity entity = new ExchangeRateEntity(resultSet.getLong("ID"),
-                        resultSet.getInt("BaseCurrencyId"),
-                        resultSet.getInt("TargetCurrencyId"), resultSet.getBigDecimal("Rate"));
-                entityList.add(entity);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                List<ExchangeRateRow> rowList = new LinkedList<>();
+
+                while (resultSet.next()) {
+                    ExchangeRateRow row = new ExchangeRateRow(
+                            resultSet.getLong("ExchangeRateId"),
+                            resultSet.getLong("BaseCurrencyId"),
+                            resultSet.getString("BaseCurrencyCode"),
+                            resultSet.getString("BaseCurrencyName"),
+                            resultSet.getString("BaseCurrencySign"),
+                            resultSet.getLong("TargetCurrencyId"),
+                            resultSet.getString("TargetCurrencyCode"),
+                            resultSet.getString("TargetCurrencyName"),
+                            resultSet.getString("TargetCurrencySign"),
+                            resultSet.getBigDecimal("Rate")
+                    );
+                    rowList.add(row);
+                }
+
+                return rowList;
             }
-            resultSet.close();
-            return entityList;
+
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void update(long id, BigDecimal rate) {
+        public void update(long id, BigDecimal rate) {
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_RATE_BY_ID_SQL);
             preparedStatement.setBigDecimal(1, rate);

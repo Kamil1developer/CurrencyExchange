@@ -25,19 +25,14 @@ public class ExchangeRateService {
     }
 
     public ExchangeRateResponseDto create(ExchangeRequestDto exchangeRateDto) throws JsonProcessingException {
-            long baseCurrencyId = currencyService.findByCode(exchangeRateDto.baseCurrencyCode()).id();
-            long targetCurrencyId = currencyService.findByCode(exchangeRateDto.targetCurrencyCode()).id();
+            CurrencyResponseDto baseCurrency = currencyService.find(exchangeRateDto.baseCurrencyCode());
+            CurrencyResponseDto targetCurrency = currencyService.find(exchangeRateDto.targetCurrencyCode());
             BigDecimal rate = new BigDecimal(exchangeRateDto.rate());
-            int id = exchangeRateDao.insert(baseCurrencyId,targetCurrencyId,rate);
-            if (id != 0) {
-                return new ExchangeRateResponseDto(id,
-                        currencyService.findById(baseCurrencyId),
-                        currencyService.findById(targetCurrencyId),
-                        new BigDecimal(exchangeRateDto.rate()));
-            }
-            else {
-                throw new AlreadyExistsException(ErrorMessages.DUPLICATE_EXCHANGE_RATE);
-            }
+            int id = exchangeRateDao.insert(baseCurrency.id(),targetCurrency.id(),rate);
+            return new ExchangeRateResponseDto(id,
+                    baseCurrency,
+                    targetCurrency,
+                    new BigDecimal(exchangeRateDto.rate()));
     }
 
 
@@ -68,7 +63,7 @@ public class ExchangeRateService {
         }
         return exchangeRateResponseDtoList;
     }
-    public ExchangeRateRow findId(String baseCurrencyCode, String targetCurrencyCode){
+    public ExchangeRateRow find(String baseCurrencyCode, String targetCurrencyCode){
         return exchangeRateDao.findByCodesWithCurrencies(baseCurrencyCode, targetCurrencyCode);
     }
     public Map<String,String> findExchangeRateCodes(String currencyCodes){
@@ -98,11 +93,11 @@ public class ExchangeRateService {
     public ExchangeRateResponseDto getExchangeRate(String exchangeRateCodes){
         String baseCurrencyCode = exchangeRateCodes.substring(0,3);
         String targetCurrencyCode = exchangeRateCodes.substring(3,6);
-        long id = findId(baseCurrencyCode, targetCurrencyCode).exchangeRateId();
+        long id = find(baseCurrencyCode, targetCurrencyCode).exchangeRateId();
         Map<String,String> exchangeRateCodesMap = findExchangeRateCodes(exchangeRateCodes);
         BigDecimal rate = findRate(exchangeRateCodes);
-        CurrencyResponseDto baseCurrency = currencyService.findByCode(exchangeRateCodesMap.get("baseCurrencyCode"));
-        CurrencyResponseDto targetCurrency = currencyService.findByCode(exchangeRateCodesMap.get("targetCurrencyCode"));
+        CurrencyResponseDto baseCurrency = currencyService.find(exchangeRateCodesMap.get("baseCurrencyCode"));
+        CurrencyResponseDto targetCurrency = currencyService.find(exchangeRateCodesMap.get("targetCurrencyCode"));
         return new ExchangeRateResponseDto(id, baseCurrency, targetCurrency, rate);
 
     }
@@ -110,7 +105,7 @@ public class ExchangeRateService {
         String baseCurrencyCode = exchangeRateCodes.substring(0, 3);
         String targetCurrencyCode = exchangeRateCodes.substring(3, 6);
 
-        ExchangeRateRow exchangeRateRow = findId(baseCurrencyCode, targetCurrencyCode);
+        ExchangeRateRow exchangeRateRow = find(baseCurrencyCode, targetCurrencyCode);
         long id = exchangeRateRow.exchangeRateId();
         exchangeRateDao.update(id, requestDto.rate());
 
