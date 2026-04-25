@@ -4,8 +4,6 @@ import org.kamilkhusainov.currency.CurrencyConstants;
 import org.kamilkhusainov.currency.dao.ExchangeRateDao;
 import org.kamilkhusainov.currency.dto.CurrencyResponseDto;
 import org.kamilkhusainov.currency.dto.ExchangeAmountResponseDto;
-import org.kamilkhusainov.currency.entity.CurrencyEntity;
-import org.kamilkhusainov.currency.entity.ExchangeRateEntity;
 import org.kamilkhusainov.currency.entity.ExchangeRateRow;
 
 import java.math.BigDecimal;

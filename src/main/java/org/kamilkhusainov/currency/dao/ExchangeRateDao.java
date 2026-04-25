@@ -1,5 +1,4 @@
 package org.kamilkhusainov.currency.dao;
-import org.kamilkhusainov.currency.entity.ExchangeRateEntity;
 import org.kamilkhusainov.currency.entity.ExchangeRateRow;
 import org.kamilkhusainov.currency.exceptions.AlreadyExistsException;
 import org.kamilkhusainov.currency.exceptions.DataBaseException;
@@ -15,7 +14,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
 
 public class ExchangeRateDao {
     private static final String FIND_RATE_BY_CURRENCY_IDS_SQL = "SELECT * FROM ExchangeRates WHERE BaseCurrencyId = ? AND TargetCurrencyId = ?";

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.kamilkhusainov.currency.dao.ExchangeRateDao;
 import org.kamilkhusainov.currency.dto.*;
 import org.kamilkhusainov.currency.entity.CurrencyEntity;
-import org.kamilkhusainov.currency.entity.ExchangeRateEntity;
 import org.kamilkhusainov.currency.entity.ExchangeRateRow;
 import org.kamilkhusainov.currency.exceptions.AlreadyExistsException;
 import org.kamilkhusainov.currency.exceptions.ErrorMessages;

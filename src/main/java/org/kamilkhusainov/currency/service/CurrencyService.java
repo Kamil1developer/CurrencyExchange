@@ -3,7 +3,6 @@ package org.kamilkhusainov.currency.service;
 import org.kamilkhusainov.currency.dao.CurrencyDao;
 import org.kamilkhusainov.currency.dto.CurrencyResponseDto;
 import org.kamilkhusainov.currency.entity.CurrencyEntity;
-import org.kamilkhusainov.currency.entity.ExchangeRateRow;
 import org.kamilkhusainov.currency.exceptions.ErrorMessages;
 import org.kamilkhusainov.currency.exceptions.NotFoundException;
 import org.kamilkhusainov.currency.dto.CurrencyRequestDto;
