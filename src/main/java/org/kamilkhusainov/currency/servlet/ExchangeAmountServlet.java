@@ -41,6 +41,19 @@ public class ExchangeAmountServlet extends HttpServlet {
             throw new ValidationException(ErrorMessages.EXCHANGE_MISSING);
         }
     }
+    private boolean isInvalidRequest(HttpServletRequest req,HttpServletResponse resp) throws IOException {
+        try {
+            Integer.parseInt(req.getParameter("amount"));
+            return req.getParameter("from") == null || req.getParameter("to") == null;
+        }
+        catch (NumberFormatException numberFormatException){
+            resp.setStatus(400);
+            resp.setContentType("application/json");
+            resp.setCharacterEncoding("UTF-8");
+            resp.getWriter().write(MAPPER.writeValueAsString(Map.of("message","Поле amount должно быть неотрицательным числом")));
+            return true;
+        }
+    }
     @Override
     public void init(){
          AppContainer appContainer = (AppContainer) getServletContext().getAttribute("appContainer");
