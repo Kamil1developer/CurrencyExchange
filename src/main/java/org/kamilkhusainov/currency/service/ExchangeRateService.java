@@ -107,6 +107,7 @@ public class ExchangeRateService {
         ExchangeRateRow exchangeRateRow = find(baseCurrencyCode, targetCurrencyCode);
         long id = exchangeRateRow.exchangeRateId();
         exchangeRateDao.update(id, requestDto.rate());
+        exchangeRateRow = find(baseCurrencyCode, targetCurrencyCode);
 
         CurrencyResponseDto baseCurrency = new CurrencyResponseDto(
                 exchangeRateRow.baseCurrencyId(),
